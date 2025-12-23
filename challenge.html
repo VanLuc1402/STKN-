@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Ultimate Challenge</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- GAMING DESIGN SYSTEM --- */
+      :root {
+        --bg-body: #f0f2f5;
+        --primary: #6c5dd3;
+        --primary-dark: #5849be;
+        --accent-gold: #ffb016; /* Màu vàng kim loại */
+        --accent-cyan: #00d2ff;
+        --accent-pink: #ff4d8d;
+        --glass-white: rgba(255, 255, 255, 0.95);
+        --card-shadow: 0 12px 30px rgba(108, 93, 211, 0.12);
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        color: #1f1d2b;
+        padding-bottom: 100px; /* Chừa chỗ cho Footer */
+      }
+
+      /* --- 1. HERO HEADER (STATS & LEVEL) --- */
+      .game-header {
+        background: linear-gradient(135deg, #1f1d2b 0%, #2d3436 100%);
+        color: white;
+        padding: 20px 24px 30px 24px;
+        border-radius: 0 0 32px 32px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Thanh Level */
+      .level-bar-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 2;
+      }
+      .level-badge {
+        width: 45px;
+        height: 45px;
+        background: var(--accent-gold);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #4a3b00;
+        line-height: 1;
+        transform: rotate(-5deg);
+        box-shadow: 0 5px 15px rgba(255, 176, 22, 0.4);
+      }
+      .level-badge span {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+      }
+
+      .xp-bar-wrapper {
+        flex: 1;
+      }
+      .xp-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        margin-bottom: 4px;
+        font-weight: 600;
+        color: #ccc;
+      }
+      .xp-track {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .xp-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-cyan), var(--primary));
+        width: 75%;
+        border-radius: 4px;
+      }
+
+      /* Streak & Items Row */
+      .stats-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        position: relative;
+        z-index: 2;
+      }
+
+      .streak-display {
+        text-align: left;
+      }
+      .fire-icon {
+        font-size: 2.5rem;
+        background: linear-gradient(to bottom, #ffd700, #ff4d4d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 0 10px rgba(255, 77, 77, 0.5));
+      }
+      .streak-num {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+      .streak-desc {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+
+      .active-items {
+        display: flex;
+        gap: 8px;
+      }
+      .item-slot {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.3);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        position: relative;
+      }
+      .item-slot.equipped {
+        border: 1px solid var(--accent-cyan);
+        background: rgba(0, 210, 255, 0.1);
+      }
+      .item-count {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        background: var(--accent-pink);
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+
+      /* Background Deco */
+      .header-deco {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-image: radial-gradient(
+          circle at 90% 10%,
+          rgba(108, 93, 211, 0.4) 0%,
+          transparent 60%
+        );
+        z-index: 1;
+      }
+
+      /* --- 2. CALENDAR STRIP (Cards) --- */
+      .calendar-section {
+        margin-top: -25px;
+        padding: 0 20px;
+        z-index: 10;
+        position: relative;
+      }
+      .calendar-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+      }
+      .calendar-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .day-card {
+        min-width: 50px;
+        height: 70px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        gap: 4px;
+        border: 2px solid transparent;
+        transition: 0.2s;
+      }
+      .day-text {
+        font-size: 0.7rem;
+        color: #888;
+        font-weight: 700;
+      }
+      .day-status {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+        border-radius: 50%;
+      }
+
+      .day-card.done {
+        border-color: var(--accent-cyan);
+        background: #e6faff;
+      }
+      .day-card.done .day-status {
+        color: var(--accent-cyan);
+      }
+
+      .day-card.today {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(108, 93, 211, 0.3);
+      }
+      .day-card.today .day-text {
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .day-card.today .day-status {
+        background: white;
+        color: var(--primary);
+        font-weight: 800;
+      }
+
+      .day-card.missed {
+        background: #fff0f0;
+        opacity: 0.7;
+      }
+      .day-card.missed .day-status {
+        color: #ff4d4d;
+      }
+
+      /* --- 3. TODAY'S QUESTS (Checklist) --- */
+      .section-box {
+        background: white;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 24px;
+        box-shadow: var(--card-shadow);
+      }
+      .box-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .reward-pill {
+        font-size: 0.75rem;
+        background: #fff4e5;
+        color: #ff9f43;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+
+      .quest-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        transition: 0.3s;
+      }
+      .quest-item:last-child {
+        border-bottom: none;
+      }
+
+      .quest-checkbox {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s;
+        color: white;
+      }
+      .quest-info {
+        flex: 1;
+      }
+      .quest-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+      }
+      .quest-xp {
+        font-size: 0.75rem;
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      /* Checked State */
+      .quest-item.completed .quest-checkbox {
+        background: var(--accent-cyan);
+        border-color: var(--accent-cyan);
+      }
+      .quest-item.completed .quest-name {
+        text-decoration: line-through;
+        color: #aaa;
+      }
+      .quest-item.completed .quest-xp {
+        color: #ccc;
+      }
+
+      /* --- 4. LEADERBOARD (Mini) --- */
+      .leaderboard-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .rank-num {
+        width: 24px;
+        font-weight: 800;
+        color: #888;
+        text-align: center;
+      }
+      .rank-1 {
+        color: var(--accent-gold);
+        font-size: 1.2rem;
+      }
+      .user-ava {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .user-details {
+        flex: 1;
+      }
+      .user-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .user-score {
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      /* --- 5. BADGE COLLECTION (Horizontal Scroll) --- */
+      .badge-scroll {
+        display: flex;
+        gap: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+      }
+      .badge-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .badge-card {
+        min-width: 100px;
+        height: 140px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        border: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+      }
+
+      .badge-img {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        filter: grayscale(100%);
+        opacity: 0.4;
+        transition: 0.3s;
+      }
+      .badge-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #999;
+        text-align: center;
+        padding: 0 5px;
+      }
+      .lock-icon {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 0.8rem;
+        color: #ccc;
+      }
+
+      /* Unlocked */
+      .badge-card.rare {
+        background: linear-gradient(135deg, #fff6e5 0%, #ffffff 100%);
+        border-color: var(--accent-gold);
+      }
+      .badge-card.rare .badge-img {
+        filter: grayscale(0%);
+        opacity: 1;
+        transform: scale(1.1);
+        filter: drop-shadow(0 5px 10px rgba(255, 176, 22, 0.4));
+      }
+      .badge-card.rare .badge-title {
+        color: #555;
+      }
+      .badge-card.rare .lock-icon {
+        display: none;
+      }
+
+      .rarity-tag {
+        position: absolute;
+        bottom: 8px;
+        font-size: 0.55rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .tag-rare {
+        background: var(--accent-gold);
+        color: white;
+      }
+
+      /* --- 6. STICKY FOOTER (SHOP) --- */
+      .shop-footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: white;
+        padding: 16px 24px 30px 24px;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 15px;
+        z-index: 100;
+      }
+      .coin-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .total-coins {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #1f1d2b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .total-coins i {
+        color: var(--accent-gold);
+      }
+
+      .btn-shop-go {
+        flex: 1;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 20px rgba(108, 93, 211, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <header class="game-header">
+        <div class="header-deco"></div>
+
+        <div
+          class="d-flex justify-content-between align-items-center mb-4 z-2 position-relative"
+        >
+          <i class="fa-solid fa-arrow-left fa-lg" onclick="history.back()"></i>
+          <div class="fw-bold">Thử thách 21 Ngày</div>
+          <i class="fa-solid fa-circle-question fa-lg opacity-50"></i>
+        </div>
+
+        <div class="level-bar-container">
+          <div class="level-badge">
+            <span>LVL</span>
+            <div>05</div>
+          </div>
+          <div class="xp-bar-wrapper">
+            <div class="xp-text">
+              <span>Skinner tập sự</span>
+              <span>750/1000 XP</span>
+            </div>
+            <div class="xp-track">
+              <div class="xp-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="streak-display">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-fire fire-icon"></i>
+              <div class="streak-num">08</div>
+            </div>
+            <div class="streak-desc">Ngày liên tiếp! Giữ vững nhé.</div>
+          </div>
+
+          <div class="active-items">
+            <div
+              class="item-slot equipped"
+              onclick="alert('Khiên băng đang bảo vệ chuỗi của bạn!')"
+            >
+              <span style="font-size: 1.5rem">🛡️</span>
+              <div class="item-count">1</div>
+            </div>
+            <div class="item-slot">
+              <span style="font-size: 1.5rem; opacity: 0.3">🧪</span>
+              <div class="item-count" style="background: #ccc">0</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="calendar-section">
+        <div class="calendar-scroll">
+          <div class="day-card done">
+            <span class="day-text">T2</span>
+            <div class="day-status"><i class="fa-solid fa-check"></i></div>
+          </div>
+          <div class="day-card done">
+            <span class="day-text">T3</span>
+            <div class="day-status"><i class="fa-solid fa-check"></i></div>
+          </div>
+          <div class="day-card missed">
+            <span class="day-text">T4</span>
+            <div class="day-status"><i class="fa-solid fa-xmark"></i></div>
+          </div>
+          <div class="day-card today">
+            <span class="day-text">HÔM NAY</span>
+            <div class="day-status"><i class="fa-solid fa-check"></i></div>
+          </div>
+          <div class="day-card">
+            <span class="day-text">T6</span>
+            <div class="day-status">09</div>
+          </div>
+          <div class="day-card">
+            <span class="day-text">T7</span>
+            <div class="day-status">10</div>
+          </div>
+          <div class="day-card">
+            <span class="day-text">CN</span>
+            <div class="day-circle">11</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="box-title">
+          <span>Nhiệm vụ hôm nay</span>
+          <span class="reward-pill">+150 XP</span>
+        </div>
+
+        <div class="quest-list">
+          <div class="quest-item completed" onclick="toggleQuest(this)">
+            <div class="quest-checkbox"><i class="fa-solid fa-check"></i></div>
+            <div class="quest-info">
+              <div class="quest-name">Sử dụng AI Scan buổi sáng</div>
+              <div class="quest-xp">+50 XP</div>
+            </div>
+          </div>
+
+          <div class="quest-item" onclick="toggleQuest(this)">
+            <div class="quest-checkbox"></div>
+            <div class="quest-info">
+              <div class="quest-name">Hoàn thành Routine tối</div>
+              <div class="quest-xp">+50 XP</div>
+            </div>
+          </div>
+
+          <div class="quest-item" onclick="toggleQuest(this)">
+            <div class="quest-checkbox"></div>
+            <div class="quest-info">
+              <div class="quest-name">Đọc 1 bài viết kiến thức</div>
+              <div class="quest-xp">+20 XP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-box" style="margin-top: 0">
+        <div class="box-title">
+          <span>Bộ sưu tập</span>
+          <span class="text-primary small" style="cursor: pointer"
+            >Xem tất cả ></span
+          >
+        </div>
+        <div class="badge-scroll">
+          <div class="badge-card rare">
+            <div class="badge-img">🦄</div>
+            <div class="badge-title">Early Bird</div>
+            <div class="rarity-tag tag-rare">HIẾM</div>
+          </div>
+          <div class="badge-card">
+            <i class="fa-solid fa-lock lock-icon"></i>
+            <div class="badge-img">🔥</div>
+            <div class="badge-title">Streak Master</div>
+          </div>
+          <div class="badge-card">
+            <i class="fa-solid fa-lock lock-icon"></i>
+            <div class="badge-img">👑</div>
+            <div class="badge-title">Skin Guru</div>
+          </div>
+          <div class="badge-card">
+            <i class="fa-solid fa-lock lock-icon"></i>
+            <div class="badge-img">📸</div>
+            <div class="badge-title">AI Fan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-box" style="margin-top: 0">
+        <div class="box-title">
+          <span>Bảng xếp hạng bạn bè</span>
+          <i class="fa-solid fa-trophy text-warning"></i>
+        </div>
+
+        <div class="leaderboard-row">
+          <div class="rank-num rank-1">1</div>
+          <img src="https://i.pravatar.cc/150?img=5" class="user-ava" />
+          <div class="user-details">
+            <div class="user-name">Minh Anh</div>
+            <div class="small text-muted">LVL 12</div>
+          </div>
+          <div class="user-score">12.5k XP</div>
+        </div>
+
+        <div class="leaderboard-row">
+          <div class="rank-num">2</div>
+          <img src="https://i.pravatar.cc/150?img=3" class="user-ava" />
+          <div class="user-details">
+            <div class="user-name">Bạn (Tôi)</div>
+            <div class="small text-muted">LVL 05</div>
+          </div>
+          <div class="user-score">5.2k XP</div>
+        </div>
+
+        <div class="leaderboard-row">
+          <div class="rank-num">3</div>
+          <img src="https://i.pravatar.cc/150?img=8" class="user-ava" />
+          <div class="user-details">
+            <div class="user-name">Hoàng Tùng</div>
+            <div class="small text-muted">LVL 04</div>
+          </div>
+          <div class="user-score">4.8k XP</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-footer">
+      <div class="coin-box">
+        <div class="coin-lbl">Số dư hiện tại</div>
+        <div class="total-coins"><i class="fa-solid fa-coins"></i> 2.540</div>
+      </div>
+      <button class="btn-shop-go" onclick="window.location.href='shop.html'">
+        Shop Vật Phẩm <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <script>
+      function toggleQuest(item) {
+        // Toggle class completed
+        const isComplete = item.classList.toggle("completed");
+        const checkbox = item.querySelector(".quest-checkbox");
+
+        if (isComplete) {
+          checkbox.innerHTML = '<i class="fa-solid fa-check"></i>';
+          // Rung nhẹ
+          if (navigator.vibrate) navigator.vibrate(50);
+        } else {
+          checkbox.innerHTML = "";
+        }
+      }
+    </script>
+  </body>
+</html>

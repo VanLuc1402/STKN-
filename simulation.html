@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Simulation Fixed</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%);
+        --text-dark: #1a1a2e;
+        --accent-color: #7f00ff;
+      }
+
+      body {
+        font-family: "Manrope", sans-serif;
+        margin: 0;
+        background-color: #f0f2f5;
+      }
+
+      /* --- RESPONSIVE --- */
+      #desktop-view {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        background: white;
+      }
+      #app-root {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        #desktop-view {
+          display: none !important;
+        }
+        #app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- APP CONTAINER --- */
+      #app-root {
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 1. VISUAL STAGE (PHẦN ẢNH) */
+      .simulation-stage {
+        position: relative;
+        width: 100%;
+        height: 55%; /* Chiếm 55% màn hình */
+        background-color: #f0f0f0; /* Màu nền sáng thay vì đen để lỡ ảnh lỗi vẫn thấy */
+      }
+
+      /* Ảnh Face */
+      .face-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center; /* Căn giữa mặt */
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      /* Lớp khuyết điểm (Defect) */
+      .layer-defect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        mix-blend-mode: multiply;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .spot {
+        position: absolute;
+        background: radial-gradient(
+          circle,
+          rgba(220, 20, 60, 0.7) 0%,
+          transparent 70%
+        );
+        border-radius: 50%;
+        filter: blur(3px);
+      }
+
+      /* Lớp Da Đẹp (Glow) */
+      .layer-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        opacity: 0;
+        pointer-events: none;
+        /* Filter làm đẹp */
+        filter: brightness(1.1) contrast(1.05) saturate(1.05) blur(0.4px);
+      }
+
+      /* Chỉ số nổi (Metrics) */
+      .float-metric {
+        position: absolute;
+        z-index: 4;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+      }
+      .float-metric i {
+        color: #ff4757;
+      }
+      .float-metric.good {
+        background: #dff9fb;
+        color: #009432;
+      }
+      .float-metric.good i {
+        color: #009432;
+      }
+
+      /* 2. CONTROL PANEL (BẢNG ĐIỀU KHIỂN) */
+      .control-panel {
+        flex-grow: 1;
+        height: 45%;
+        background: white;
+        border-radius: 24px 24px 0 0;
+        margin-top: -24px; /* Đè lên ảnh */
+        z-index: 10;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Info Text */
+      .phase-badge {
+        display: inline-block;
+        background: #eee;
+        color: #555;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .phase-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .phase-desc {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+
+      /* Timeline Slider */
+      .slider-wrapper {
+        position: relative;
+        height: 40px;
+        margin-bottom: 20px;
+      }
+      .timeline-track {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        height: 4px;
+        background: #eee;
+        border-radius: 10px;
+        transform: translateY(-50%);
+      }
+      .timeline-progress {
+        position: absolute;
+        top: 50%;
+        width: 0%;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 10px;
+        transform: translateY(-50%);
+      }
+      .milestone {
+        position: absolute;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        background: white;
+        border: 2px solid #ccc;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+      }
+      .milestone.active {
+        border-color: var(--accent-color);
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+
+      input[type="range"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        z-index: 5;
+        cursor: pointer;
+      }
+
+      /* Nút Bấm */
+      .action-buttons {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .btn-buy {
+        background: #111;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 14px;
+        font-weight: 700;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* NÚT THOÁT BẠN YÊU CẦU */
+      .btn-exit {
+        background: transparent;
+        color: #666;
+        border: 1px solid #ddd;
+        padding: 12px;
+        border-radius: 14px;
+        font-weight: 600;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-view">
+      <p>Vui lòng xem trên giao diện Mobile</p>
+    </div>
+
+    <div id="app-root">
+      <div class="simulation-stage">
+        <div class="position-absolute top-0 start-0 p-3 z-3">
+          <button
+            class="btn btn-light btn-sm rounded-circle shadow"
+            onclick="alert('Quay lại')"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+        </div>
+
+        <img
+          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=688&auto=format&fit=crop"
+          class="face-img"
+          alt="User Face"
+        />
+
+        <div class="layer-defect" id="defect-layer">
+          <div
+            class="spot"
+            style="top: 45%; left: 30%; width: 40px; height: 35px"
+          ></div>
+          <div
+            class="spot"
+            style="top: 48%; left: 65%; width: 30px; height: 30px"
+          ></div>
+          <div
+            class="spot"
+            style="top: 32%; left: 50%; width: 50px; height: 25px; opacity: 0.6"
+          ></div>
+        </div>
+
+        <img
+          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=688&auto=format&fit=crop"
+          class="face-img layer-glow"
+          id="glow-layer"
+        />
+
+        <div
+          class="float-metric"
+          id="metric-redness"
+          style="top: 55%; left: 20%"
+        >
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Viêm đỏ: Cao</span>
+        </div>
+        <div
+          class="float-metric"
+          id="metric-moist"
+          style="top: 40%; right: 15%"
+        >
+          <i class="fa-solid fa-droplet"></i> <span>Độ ẩm: 32%</span>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div>
+          <span class="phase-badge" id="phase-badge">Giai đoạn 1</span>
+          <div class="phase-title" id="phase-title">Hiện tại</div>
+          <div class="phase-desc" id="phase-desc">
+            Da đang bị kích ứng và thiếu ẩm trầm trọng.
+          </div>
+        </div>
+
+        <div class="slider-wrapper">
+          <div class="timeline-track"></div>
+          <div
+            class="timeline-progress"
+            id="progress-bar"
+            style="width: 0%"
+          ></div>
+
+          <div class="milestone active" style="left: 0%"></div>
+          <div class="milestone" style="left: 33%"></div>
+          <div class="milestone" style="left: 66%"></div>
+          <div class="milestone" style="left: 100%"></div>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            oninput="updateSim(this.value)"
+          />
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn-buy" onclick="alert('Thêm vào giỏ!')">
+            <span>Mua lộ trình này</span>
+            <span>1.250k <i class="fa-solid fa-arrow-right ms-1"></i></span>
+          </button>
+
+          <button
+            class="btn-exit"
+            onclick="alert('Đã thoát mô phỏng, về trang chủ!')"
+          >
+            Thoát mô phỏng
+          </button>
+
+          <button
+            class="btn btn-light mb-3"
+            onclick="window.location.href='routine.html'"
+          >
+            <i class="fa-solid fa-arrow-left"></i> Về lộ trình
+          </button>
+          <button
+            class="btn btn-outline-primary"
+            onclick="window.location.href='home.html'"
+          >
+            <i class="fa-solid fa-house"></i> Trang chủ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function updateSim(val) {
+        const p = val / 100;
+
+        // 1. Slider Visual
+        document.getElementById("progress-bar").style.width = val + "%";
+        document.querySelectorAll(".milestone").forEach((m, i) => {
+          m.classList.toggle("active", val >= i * 33 - 5);
+        });
+
+        // 2. Image Opacity
+        document.getElementById("defect-layer").style.opacity = Math.max(
+          0,
+          1 - p * 1.5
+        );
+        document.getElementById("glow-layer").style.opacity = p;
+
+        // 3. Metrics Logic
+        const mRed = document.getElementById("metric-redness");
+        const mMoist = document.getElementById("metric-moist");
+
+        if (val > 60) {
+          mRed.classList.add("good");
+          mRed.innerHTML =
+            '<i class="fa-solid fa-check"></i> <span>Đã hết viêm</span>';
+          mMoist.classList.add("good");
+          mMoist.innerHTML =
+            '<i class="fa-solid fa-check"></i> <span>Độ ẩm: 95%</span>';
+        } else {
+          mRed.classList.remove("good");
+          mRed.innerHTML =
+            '<i class="fa-solid fa-triangle-exclamation"></i> <span>Viêm đỏ: ' +
+            (val > 30 ? "Giảm" : "Cao") +
+            "</span>";
+          mMoist.classList.remove("good");
+          mMoist.innerHTML =
+            '<i class="fa-solid fa-droplet"></i> <span>Độ ẩm: ' +
+            (32 + Math.floor(val * 0.6)) +
+            "%</span>";
+        }
+
+        // 4. Text Content
+        const title = document.getElementById("phase-title");
+        const desc = document.getElementById("phase-desc");
+        const badge = document.getElementById("phase-badge");
+
+        if (val < 25) {
+          badge.innerText = "Giai đoạn 1";
+          title.innerText = "Hiện tại";
+          desc.innerText = "Da đang bị kích ứng và thiếu ẩm trầm trọng.";
+        } else if (val < 60) {
+          badge.innerText = "Giai đoạn 2 (Tuần 2)";
+          title.innerText = "Phục hồi";
+          desc.innerText = "Các nốt viêm giảm sưng, da bắt đầu ngậm nước.";
+        } else {
+          badge.innerText = "Giai đoạn 3 (Tháng 1)";
+          title.innerText = "Tái tạo";
+          desc.innerText = "Bề mặt da láng mịn, lỗ chân lông thu nhỏ.";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Rewards Hub</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #f4f6f9;
+        --primary: #7000ff;
+        --card-gradient: linear-gradient(135deg, #1f1d2b 0%, #2d3436 100%);
+        --gold: #ffd700;
+        --text-dark: #2d3436;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        color: var(--text-dark);
+        padding-bottom: 40px;
+      }
+
+      #app-root {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      /* --- 1. HEADER (Virtual Wallet Card) --- */
+      .rewards-header {
+        background: white;
+        padding: 20px 24px 30px 24px;
+        border-radius: 0 0 32px 32px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      }
+
+      .nav-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .nav-title {
+        font-weight: 800;
+        font-size: 1.2rem;
+      }
+      .history-btn {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #666;
+        text-decoration: none;
+      }
+
+      .wallet-card {
+        background: linear-gradient(120deg, #7000ff 0%, #ff0055 100%);
+        border-radius: 24px;
+        padding: 24px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(112, 0, 255, 0.3);
+      }
+
+      /* Họa tiết Hologram */
+      .holo-circle {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 60%
+        );
+        top: -50px;
+        right: -50px;
+        border-radius: 50%;
+      }
+
+      .card-label {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .coin-balance {
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      .coin-icon {
+        color: var(--gold);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
+      .vip-tier {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .vip-progress {
+        flex: 1;
+        height: 6px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+        margin: 0 12px;
+        overflow: hidden;
+      }
+      .vip-fill {
+        width: 70%;
+        height: 100%;
+        background: var(--gold);
+      }
+
+      /* --- 2. CATEGORY TABS --- */
+      .cat-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 20px 24px;
+        scrollbar-width: none;
+      }
+      .cat-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .cat-pill {
+        padding: 8px 16px;
+        background: white;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #888;
+        white-space: nowrap;
+        border: 1px solid #eee;
+        transition: 0.2s;
+      }
+      .cat-pill.active {
+        background: #1f1d2b;
+        color: white;
+        border-color: #1f1d2b;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      /* --- 3. REWARD LIST (Ticket Style) --- */
+      .reward-list {
+        padding: 0 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .ticket-card {
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f0f0f0;
+        position: relative;
+      }
+
+      /* Left Side: Image */
+      .ticket-left {
+        width: 100px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+      }
+      .ticket-img {
+        width: 100%;
+        height: 80px;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+      }
+
+      /* Middle: Info */
+      .ticket-mid {
+        flex: 1;
+        padding: 16px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-right: 2px dashed #eee; /* Đường cắt vé */
+        position: relative;
+      }
+      /* Tạo hình bán nguyệt ở đường cắt (Ticket Holes) */
+      .ticket-mid::before,
+      .ticket-mid::after {
+        content: "";
+        position: absolute;
+        right: -6px;
+        width: 12px;
+        height: 12px;
+        background: var(--bg-body);
+        border-radius: 50%;
+      }
+      .ticket-mid::before {
+        top: -6px;
+      }
+      .ticket-mid::after {
+        bottom: -6px;
+      }
+
+      .reward-name {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+      .reward-sub {
+        font-size: 0.75rem;
+        color: #888;
+        margin-bottom: 8px;
+      }
+      .cost-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      /* Right: Action */
+      .ticket-right {
+        width: 80px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-redeem {
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        border: none;
+        background: var(--bg-body);
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .btn-redeem.can-buy {
+        background: linear-gradient(135deg, #7000ff 0%, #ff0055 100%);
+        color: white;
+        box-shadow: 0 4px 10px rgba(112, 0, 255, 0.3);
+      }
+      .btn-redeem.locked {
+        background: #eee;
+        color: #aaa;
+        cursor: not-allowed;
+      }
+
+      /* --- 4. CONFIRM MODAL --- */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+      }
+      .modal-box {
+        background: white;
+        width: 85%;
+        max-width: 320px;
+        border-radius: 24px;
+        padding: 24px;
+        text-align: center;
+        animation: zoomIn 0.3s ease;
+      }
+      @keyframes zoomIn {
+        from {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .modal-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+        object-fit: cover;
+      }
+      .btn-confirm {
+        width: 100%;
+        padding: 14px;
+        border-radius: 16px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        margin-top: 10px;
+      }
+      .btn-cancel {
+        background: transparent;
+        color: #888;
+        margin-top: 10px;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <div class="rewards-header">
+        <div class="nav-top">
+          <i
+            class="fa-solid fa-arrow-left fa-lg"
+            onclick="window.location.href='home.html'"
+          ></i>
+          <span class="nav-title">Đổi Quà</span>
+          <a href="#" class="history-btn">Lịch sử</a>
+        </div>
+
+        <div class="wallet-card">
+          <div class="holo-circle"></div>
+          <div class="d-flex justify-content-between">
+            <span class="card-label">SkinCoins Balance</span>
+            <i class="fa-solid fa-wifi opacity-50"></i>
+          </div>
+
+          <div class="coin-balance">
+            <i class="fa-solid fa-coins coin-icon"></i>
+            <span id="user-balance">2.540</span>
+          </div>
+
+          <div class="vip-tier">
+            <span>Gold Member</span>
+            <div class="vip-progress">
+              <div class="vip-fill"></div>
+            </div>
+            <span>Platinum ></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-scroll">
+        <div class="cat-pill active">Tất cả</div>
+        <div class="cat-pill">Voucher Spa</div>
+        <div class="cat-pill">Mỹ phẩm</div>
+        <div class="cat-pill">Quà tặng số</div>
+      </div>
+
+      <div class="reward-list">
+        <div class="ticket-card">
+          <div class="ticket-left">
+            <img
+              src="https://i.pinimg.com/736x/45/d6/8e/45d68efb46d021074e306d9bf33fbe2c.jpg"
+              class="ticket-img"
+            />
+          </div>
+          <div class="ticket-mid">
+            <div class="reward-name">Giảm 50K dịch vụ Spa</div>
+            <div class="reward-sub">Áp dụng cho gói nặn mụn</div>
+            <div class="cost-row">
+              <i class="fa-solid fa-coins text-warning"></i> 500
+            </div>
+          </div>
+          <div class="ticket-right">
+            <button
+              class="btn-redeem can-buy"
+              onclick="openConfirm('Voucher Spa 50K', 500)"
+            >
+              Đổi ngay
+            </button>
+          </div>
+        </div>
+
+        <div class="ticket-card">
+          <div class="ticket-left">
+            <img
+              src="https://i.pinimg.com/736x/99/33/8b/99338b37e40d859925e2f2b78755cc92.jpg"
+              class="ticket-img"
+            />
+          </div>
+          <div class="ticket-mid">
+            <div class="reward-name">Mặt nạ đất sét Kiehl's</div>
+            <div class="reward-sub">Size Mini 14ml</div>
+            <div class="cost-row">
+              <i class="fa-solid fa-coins text-warning"></i> 2.000
+            </div>
+          </div>
+          <div class="ticket-right">
+            <button
+              class="btn-redeem can-buy"
+              onclick="openConfirm('Mặt nạ Kiehl\'s', 2000)"
+            >
+              Đổi ngay
+            </button>
+          </div>
+        </div>
+
+        <div class="ticket-card">
+          <div class="ticket-left">
+            <img
+              src="https://i.pinimg.com/1200x/8e/94/2e/8e942ea13eb9c62a1552c54177d28ea4.jpg"
+              class="ticket-img"
+              style="filter: grayscale(100%)"
+            />
+          </div>
+          <div class="ticket-mid">
+            <div class="reward-name">Fullsize Serum B5</div>
+            <div class="reward-sub">La Roche-Posay 30ml</div>
+            <div class="cost-row" style="color: #999">
+              <i class="fa-solid fa-coins"></i> 5.000
+            </div>
+            <div class="progress mt-2" style="height: 4px">
+              <div class="progress-bar bg-warning" style="width: 50%"></div>
+            </div>
+          </div>
+          <div class="ticket-right">
+            <button
+              class="btn-redeem locked"
+              onclick="alert('Bạn cần thêm 2.460 Coins nữa!')"
+            >
+              <i class="fa-solid fa-lock mb-1"></i>
+              Thiếu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/1162/1162951.png"
+            class="modal-img"
+          />
+          <h4 class="fw-bold mb-2">Xác nhận đổi?</h4>
+          <p class="text-muted small mb-4">
+            Bạn sẽ dùng
+            <strong class="text-dark" id="modal-cost">0</strong> coins để đổi
+            <strong class="text-primary" id="modal-name">Item</strong>.
+          </p>
+
+          <button class="btn-confirm" onclick="processRedeem()">
+            Xác nhận
+          </button>
+          <button class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentCost = 0;
+      let currentBalance = 2540;
+
+      function openConfirm(name, cost) {
+        document.getElementById("modal-name").innerText = name;
+        document.getElementById("modal-cost").innerText = cost;
+        currentCost = cost;
+        document.getElementById("confirmModal").style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("confirmModal").style.display = "none";
+      }
+
+      function processRedeem() {
+        closeModal();
+        if (currentBalance >= currentCost) {
+          // Trừ tiền
+          currentBalance -= currentCost;
+
+          // Hiệu ứng số chạy
+          animateValue(
+            "user-balance",
+            currentBalance + currentCost,
+            currentBalance,
+            1000
+          );
+
+          alert("Đổi quà thành công! Voucher đã lưu vào ví.");
+        } else {
+          alert("Lỗi không xác định.");
+        }
+      }
+
+      // Hàm chạy số dư (Animation)
+      function animateValue(id, start, end, duration) {
+        if (start === end) return;
+        var range = end - start;
+        var current = start;
+        var increment = end > start ? 1 : -1;
+        var stepTime = Math.abs(Math.floor(duration / range));
+        var obj = document.getElementById(id);
+        var timer = setInterval(function () {
+          current += increment;
+          obj.innerHTML = current.toLocaleString(); // Format số có dấu phẩy
+          if (current == end) {
+            clearInterval(timer);
+          }
+        }, 10); // Chạy nhanh cho mượt
+      }
+    </script>
+  </body>
+</html>

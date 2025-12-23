@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - AI Scan</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        --primary-color: #4a00e0;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        background-color: #000;
+      }
+
+      /* --- LOGIC HIỂN THỊ (DESKTOP vs MOBILE) --- */
+      #desktop-landing {
+        display: block;
+        background: white;
+        min-height: 100vh;
+      }
+      #mobile-app-root {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-landing {
+          display: none !important;
+        }
+        #mobile-app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- CSS CHO DESKTOP (LANDING PAGE) --- */
+      .hero-section {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        background-image: radial-gradient(#ddd 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* --- CSS CHO MOBILE APP (CAMERA UI) --- */
+      #mobile-app-root {
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+      }
+
+      /* 1. CAMERA FEED */
+      #camera-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1); /* Lật ngược như gương */
+        z-index: 1;
+      }
+      /* Ảnh giả lập nếu không mở được camera */
+      #camera-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        opacity: 0.8;
+      }
+
+      /* 2. OVERLAY LAYER (Lớp phủ tối + Lỗ Oval) */
+      .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        /* Tạo lỗ thủng hình Oval ở giữa */
+        background: radial-gradient(
+          ellipse 70% 55% at 50% 45%,
+          transparent 45%,
+          rgba(0, 0, 0, 0.8) 46%
+        );
+      }
+
+      /* Viền Oval hướng dẫn */
+      .guide-oval {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        height: 55%;
+        border: 2px dashed rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        box-shadow: 0 0 20px rgba(142, 45, 226, 0.2);
+        z-index: 3;
+      }
+
+      /* Hiệu ứng quét (Scan Animation) */
+      .scan-line {
+        width: 100%;
+        height: 2px;
+        background: #8e2de2;
+        position: absolute;
+        top: 0;
+        box-shadow: 0 0 10px #8e2de2;
+        animation: scanMove 3s infinite linear;
+        opacity: 0.7;
+      }
+      @keyframes scanMove {
+        0% {
+          top: 0%;
+        }
+        100% {
+          top: 100%;
+        }
+      }
+
+      /* 3. UI CONTROLS */
+      .top-bar {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        color: white;
+      }
+
+      .bottom-controls {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding-bottom: 40px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+      }
+
+      /* Indicator Ánh sáng */
+      .light-indicator {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        transition: 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .light-indicator.good {
+        color: #4caf50;
+        border-color: #4caf50;
+      } /* Xanh */
+      .light-indicator.bad {
+        color: #f44336;
+        border-color: #f44336;
+      } /* Đỏ */
+
+      /* Nút chụp (Shutter Button) */
+      .shutter-btn-outer {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .shutter-btn-inner {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: white;
+        transition: 0.2s;
+      }
+      .shutter-btn-outer:active {
+        transform: scale(0.95);
+      }
+      .shutter-btn-outer:active .shutter-btn-inner {
+        background: #ccc;
+        transform: scale(0.9);
+      }
+
+      /* Text hướng dẫn */
+      .guide-text {
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-landing">
+      <div class="mb-4 text-primary">
+        <i class="fa-solid fa-camera-rotate fa-4x"></i>
+      </div>
+      <h2 class="fw-bold">Giao diện AI Camera</h2>
+      <p class="text-muted">Tính năng này cần camera điện thoại.</p>
+      <div class="p-3 bg-light rounded border mt-3">
+        <small>Vui lòng thu nhỏ trình duyệt để xem Demo UI.</small>
+      </div>
+    </div>
+
+    <div id="mobile-app-root">
+      <video id="camera-video" autoplay playsinline muted></video>
+      <img
+        id="camera-placeholder"
+        src="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1000&auto=format&fit=crop"
+        style="display: none"
+      />
+
+      <div class="camera-overlay">
+        <div class="guide-oval">
+          <div class="scan-line"></div>
+        </div>
+      </div>
+
+      <div class="top-bar">
+        <button
+          class="btn text-white p-0"
+          onclick="window.location.href='home.html'"
+        >
+          <i class="fa-solid fa-xmark fa-xl"></i>
+        </button>
+        <button class="btn text-white p-0">
+          <i class="fa-solid fa-bolt-slash fa-xl"></i>
+        </button>
+      </div>
+
+      <div class="bottom-controls">
+        <div id="light-status" class="light-indicator good">
+          <i class="fa-solid fa-sun"></i>
+          <span>Ánh sáng tốt</span>
+        </div>
+
+        <div class="guide-text">Giữ điện thoại thẳng, tránh ngược sáng</div>
+
+        <div class="shutter-btn-outer" onclick="takePhoto()">
+          <div class="shutter-btn-inner"></div>
+        </div>
+
+        <button
+          class="btn btn-sm text-white mt-4 opacity-75"
+          onclick="requestCamera()"
+        >
+          <i class="fa-solid fa-camera me-1"></i> Bật Camera thật
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // 1. Logic giả lập ánh sáng (Đổi màu Xanh/Đỏ mỗi 3s để demo)
+      const lightStatus = document.getElementById("light-status");
+      const icon = lightStatus.querySelector("i");
+      const text = lightStatus.querySelector("span");
+
+      setInterval(() => {
+        if (lightStatus.classList.contains("good")) {
+          // Chuyển sang Thiếu sáng (Đỏ)
+          lightStatus.classList.remove("good");
+          lightStatus.classList.add("bad");
+          text.innerText = "Thiếu sáng";
+        } else {
+          // Chuyển sang Đủ sáng (Xanh)
+          lightStatus.classList.remove("bad");
+          lightStatus.classList.add("good");
+          text.innerText = "Ánh sáng tốt";
+        }
+      }, 3000);
+
+      // 2. Logic Bật Camera thật (WebRTC)
+      async function requestCamera() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false,
+          });
+          const video = document.getElementById("camera-video");
+          video.srcObject = stream;
+          document.getElementById("camera-placeholder").style.display = "none";
+
+          // Ẩn nút bật camera đi
+          event.target.style.display = "none";
+        } catch (err) {
+          alert(
+            "Không thể truy cập Camera (Hoặc bạn đang mở trên trình duyệt không hỗ trợ). Đang dùng ảnh giả lập."
+          );
+          document.getElementById("camera-video").style.display = "none";
+          document.getElementById("camera-placeholder").style.display = "block";
+        }
+      }
+
+      // 3. Logic Chụp ảnh (Shutter)
+      function takePhoto() {
+        // Hiệu ứng chớp màn hình trắng
+        const flash = document.createElement("div");
+        flash.style.position = "absolute";
+        flash.style.top = "0";
+        flash.style.left = "0";
+        flash.style.width = "100%";
+        flash.style.height = "100%";
+        flash.style.background = "white";
+        flash.style.zIndex = "100";
+        flash.style.transition = "opacity 0.2s";
+        document.getElementById("mobile-app-root").appendChild(flash);
+
+        setTimeout(() => (flash.style.opacity = "0"), 50);
+        setTimeout(() => {
+          flash.remove();
+          window.location.href = "processing.html";
+        }, 300);
+      }
+
+      // Mặc định hiển thị ảnh giả lập cho đẹp
+      document.getElementById("camera-placeholder").style.display = "block";
+    </script>
+  </body>
+</html>

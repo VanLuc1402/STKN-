@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Routine Proposal</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        --primary-color: #4a00e0;
+        --bg-light: #f8f9fa;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        background-color: #f8f9fa;
+      }
+
+      /* --- RESPONSIVE LOGIC --- */
+      #desktop-landing {
+        display: block;
+        background: white;
+        min-height: 100vh;
+      }
+      #mobile-app-root {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-landing {
+          display: none !important;
+        }
+        #mobile-app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- DESKTOP CSS --- */
+      .hero-section {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        background-image: radial-gradient(#ddd 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* --- MOBILE APP CSS --- */
+      #mobile-app-root {
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 1. AI INSIGHT CARD */
+      .ai-insight-box {
+        background: var(--primary-gradient);
+        border-radius: 16px;
+        padding: 20px;
+        color: white;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 20px rgba(74, 0, 224, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      /* Họa tiết nền */
+      .ai-insight-box::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      }
+
+      /* 2. TABS (Sáng / Tối) */
+      .routine-tabs {
+        display: flex;
+        background: #f0f0f0;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 20px;
+      }
+      .routine-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #666;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .routine-tab.active {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      /* 3. TIMELINE STEPS */
+      .timeline-container {
+        position: relative;
+        padding-left: 20px;
+      }
+      .timeline-line {
+        position: absolute;
+        left: 0;
+        top: 15px;
+        bottom: 0;
+        width: 2px;
+        background: #eee;
+      }
+
+      .step-item {
+        position: relative;
+        margin-bottom: 24px;
+        padding-left: 25px;
+      }
+
+      .step-dot {
+        position: absolute;
+        left: -24px;
+        top: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        z-index: 2;
+      }
+
+      .step-card {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      }
+
+      .product-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f8f9fa;
+        margin-right: 12px;
+      }
+
+      .tag-reason {
+        font-size: 0.7rem;
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 4px;
+      }
+
+      /* 4. FOOTER BUTTONS */
+      .footer-fixed {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #eee;
+        z-index: 100;
+      }
+
+      .btn-simulation {
+        background: linear-gradient(
+          135deg,
+          #ff9966 0%,
+          #ff5e62 100%
+        ); /* Màu cam nổi bật cho action chính */
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 14px;
+        font-weight: 700;
+        width: 100%;
+        margin-bottom: 12px;
+        box-shadow: 0 5px 15px rgba(255, 94, 98, 0.3);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-outline-home {
+        background: transparent;
+        border: 2px solid #eee;
+        color: #666;
+        border-radius: 16px;
+        padding: 12px;
+        font-weight: 600;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-landing">
+      <div class="mb-4 text-primary">
+        <i class="fa-solid fa-clipboard-list fa-4x"></i>
+      </div>
+      <h2 class="fw-bold">Lộ trình Đề xuất</h2>
+      <p class="text-muted">Thu nhỏ trình duyệt để xem Routine.</p>
+    </div>
+
+    <div id="mobile-app-root">
+      <div class="px-4 pt-4 pb-2 bg-white sticky-top shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+          <button
+            class="btn btn-light btn-sm rounded-circle me-3"
+            onclick="window.location.href='result.html'"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h5 class="fw-bold m-0">Phác đồ điều trị</h5>
+        </div>
+      </div>
+
+      <div class="p-4 flex-grow-1 overflow-auto">
+        <div class="ai-insight-box">
+          <div class="d-flex align-items-start mb-2">
+            <i class="fa-solid fa-robot me-2 mt-1"></i>
+            <h6 class="fw-bold m-0">Chẩn đoán của AI</h6>
+          </div>
+          <p class="small mb-0 opacity-90" style="line-height: 1.5">
+            Da bạn thuộc nhóm <strong>Dầu & Nhạy cảm</strong>, đang có
+            <strong>Mụn ẩn cấp độ 2</strong>. Routine này tập trung làm sạch sâu
+            (BHA) và phục hồi hàng rào bảo vệ (B5).
+          </p>
+        </div>
+
+        <div class="routine-tabs">
+          <div class="routine-tab active" onclick="switchTab('morning', this)">
+            <i class="fa-regular fa-sun me-1"></i> Sáng
+          </div>
+          <div class="routine-tab" onclick="switchTab('evening', this)">
+            <i class="fa-regular fa-moon me-1"></i> Tối
+          </div>
+        </div>
+
+        <div id="routine-morning" class="timeline-container">
+          <div class="timeline-line"></div>
+
+          <div class="step-item">
+            <div class="step-dot">1</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/1200x/57/d5/68/57d5686457711b96dc34c018265400fb.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Sữa rửa mặt dịu nhẹ</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  SVR Sebiaclear Gel
+                </div>
+                <span class="tag-reason">Kiểm soát dầu</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-dot">2</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/1200x/7f/2b/ed/7f2bedec6fd4116dd9000314df6715b3.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Toner cấp ẩm</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  Klairs Supple Prep
+                </div>
+                <span class="tag-reason">Cân bằng pH</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-dot">3</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/1200x/50/53/9f/50539ff2851434a24fdfc7c3ae0b80a9.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Kem chống nắng</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  La Roche-Posay Anthelios
+                </div>
+                <span class="tag-reason">Bảo vệ UV</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="routine-evening"
+          class="timeline-container"
+          style="display: none"
+        >
+          <div class="timeline-line"></div>
+
+          <div class="step-item">
+            <div class="step-dot">1</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/736x/22/6f/0b/226f0b838b2120ae92210701d3c1056e.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Nước tẩy trang</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  Bioderma Sensibio
+                </div>
+                <span class="tag-reason">Làm sạch kép</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-dot">2</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/1200x/52/66/2b/52662ba6ba99062376c0eed1eb38120c.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Dung dịch BHA 2%</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  Obagi Clenziderm
+                </div>
+                <span class="tag-reason">Trị mụn ẩn</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-dot">3</div>
+            <div class="step-card">
+              <img
+                src="https://i.pinimg.com/1200x/1c/64/82/1c6482f9295c298ffd1823eea8a96047.jpg"
+                class="product-img"
+              />
+              <div>
+                <div class="fw-bold small">Kem dưỡng phục hồi</div>
+                <div class="text-muted" style="font-size: 0.75rem">
+                  La Roche-Posay B5+
+                </div>
+                <span class="tag-reason">Giảm kích ứng</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-fixed">
+        <button
+          class="btn btn-simulation"
+          onclick="window.location.href='simulation.html'"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Xem mô phỏng tương lai
+        </button>
+        <button
+          class="btn btn-outline-home"
+          onclick="window.location.href='home.html'"
+        >
+          <i class="fa-solid fa-house me-2"></i> Để sau, về Trang chủ
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(time, btn) {
+        // 1. Update Tab Style
+        document
+          .querySelectorAll(".routine-tab")
+          .forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+
+        // 2. Show/Hide Content
+        if (time === "morning") {
+          document.getElementById("routine-morning").style.display = "block";
+          document.getElementById("routine-evening").style.display = "none";
+        } else {
+          document.getElementById("routine-morning").style.display = "none";
+          document.getElementById("routine-evening").style.display = "block";
+        }
+      }
+    </script>
+  </body>
+</html>

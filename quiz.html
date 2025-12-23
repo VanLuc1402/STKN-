@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Skin AI Quiz</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        --primary-color: #4a00e0;
+        --bg-light: #f8f9fa;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+      }
+
+      /* --- LOGIC HIỂN THỊ (DESKTOP vs MOBILE) --- */
+      #desktop-landing {
+        display: block;
+      }
+      #mobile-app-root {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-landing {
+          display: none !important;
+        }
+        #mobile-app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- CSS CHO DESKTOP --- */
+      .hero-section {
+        padding: 80px 0;
+        background: #fff;
+        background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+      .feature-box {
+        padding: 30px;
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: 0.3s;
+        height: 100%;
+      }
+      .feature-box:hover {
+        transform: translateY(-5px);
+      }
+
+      /* --- CSS CHO MOBILE APP --- */
+      #mobile-app-root {
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* UI Elements App */
+      .btn-brand {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 600;
+        width: 100%;
+        transition: 0.2s;
+      }
+      .btn-brand:active {
+        opacity: 0.9;
+        transform: scale(0.98);
+      }
+
+      .progress-container {
+        height: 4px;
+        background: #eee;
+        width: 100%;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--primary-gradient);
+        width: 10%;
+        transition: width 0.4s ease;
+      }
+
+      /* Step Animations */
+      .step-content {
+        display: none;
+        animation: slideIn 0.4s ease;
+      }
+      .step-content.active {
+        display: block;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Cards & Chips */
+      .selection-card {
+        border: 2px solid #f0f0f0;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+        background: #fff;
+      }
+      .selection-card.selected {
+        border-color: var(--primary-color);
+        background-color: #f3e5f5;
+        color: var(--primary-color);
+      }
+
+      .chip-option {
+        display: inline-block;
+        padding: 10px 16px;
+        margin: 4px;
+        border-radius: 25px;
+        background-color: #f5f5f5;
+        color: #333;
+        cursor: pointer;
+        border: 1px solid transparent;
+        font-size: 0.9rem;
+      }
+      .chip-option.selected {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      /* Range Slider */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        cursor: pointer;
+        margin-top: -10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #ddd;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-landing">
+      <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
+        <div class="container">
+          <a class="navbar-brand fw-bold text-primary" href="#">SKINTHESIS</a>
+          <div class="ms-auto">
+            <button class="btn btn-dark rounded-pill px-4">Tải App</button>
+          </div>
+        </div>
+      </nav>
+
+      <header class="hero-section text-center">
+        <div class="container">
+          <h1 class="display-4 fw-bold mb-3">Thấu hiểu làn da bạn</h1>
+          <p class="lead text-muted mb-5">
+            Bài khảo sát 10 bước chuyên sâu giúp AI thiết lập lộ trình chính xác
+            nhất.
+          </p>
+
+          <div class="row justify-content-center g-4">
+            <div class="col-md-3">
+              <div class="feature-box">
+                <i
+                  class="fa-solid fa-clipboard-list fa-3x text-warning mb-3"
+                ></i>
+                <h5>Cá nhân hóa</h5>
+                <small class="text-muted"
+                  >Dựa trên thói quen & môi trường sống.</small
+                >
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="feature-box">
+                <i class="fa-solid fa-dna fa-3x text-primary mb-3"></i>
+                <h5>Khoa học</h5>
+                <small class="text-muted"
+                  >Phân tích dựa trên dữ liệu da liễu.</small
+                >
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="feature-box">
+                <i
+                  class="fa-solid fa-mobile-screen-button fa-3x text-success mb-3"
+                ></i>
+                <h5>Trải nghiệm ngay</h5>
+                <small class="text-muted"
+                  >Mở trang này trên điện thoại để bắt đầu.</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    </div>
+
+    <div id="mobile-app-root">
+      <div
+        class="px-4 pt-4 pb-2 bg-white sticky-top shadow-sm"
+        style="z-index: 100"
+      >
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <button
+            class="btn btn-light btn-sm rounded-circle"
+            onclick="prevStep()"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="fw-bold text-primary small">
+            Bước <span id="current-step-num">1</span>/10
+          </span>
+          <button
+            class="btn btn-light btn-sm rounded-circle text-muted"
+            onclick="alert('Lưu nháp & Thoát?')"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="progress-container">
+          <div class="progress-fill" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="p-4 flex-grow-1 overflow-auto bg-white" id="quiz-container">
+        <div class="step-content active" data-step="1">
+          <h3 class="fw-bold mb-2">Da bạn thuộc loại nào?</h3>
+          <p class="text-muted small mb-4">
+            Dựa trên cảm nhận khi mới ngủ dậy.
+          </p>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="selection-card" onclick="selectCard(this)">
+                <i class="fa-solid fa-droplet fa-2x mb-2 text-secondary"></i>
+                <div class="fw-bold">Da Dầu</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="selection-card" onclick="selectCard(this)">
+                <i
+                  class="fa-regular fa-snowflake fa-2x mb-2 text-secondary"
+                ></i>
+                <div class="fw-bold">Da Khô</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="selection-card" onclick="selectCard(this)">
+                <i
+                  class="fa-solid fa-circle-half-stroke fa-2x mb-2 text-secondary"
+                ></i>
+                <div class="fw-bold">Hỗn hợp</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="selection-card" onclick="selectCard(this)">
+                <i
+                  class="fa-regular fa-face-smile fa-2x mb-2 text-secondary"
+                ></i>
+                <div class="fw-bold">Da Thường</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="2">
+          <h3 class="fw-bold mb-2">Vấn đề quan tâm nhất?</h3>
+          <p class="text-muted small mb-4">Chọn tất cả vấn đề bạn đang gặp.</p>
+          <div class="d-flex flex-wrap">
+            <div class="chip-option" onclick="toggleChip(this)">
+              Mụn trứng cá
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">Mụn ẩn</div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Nám / Tàn nhang
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Lão hóa / Nếp nhăn
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Lỗ chân lông to
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">Sẹo rỗ</div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Thâm sau mụn
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="3">
+          <h3 class="fw-bold mb-2">Độ tuổi của bạn?</h3>
+          <p class="text-muted small mb-5">
+            Giúp AI xác định mức độ lão hóa sinh học.
+          </p>
+          <div class="text-center py-4">
+            <h1 class="display-1 fw-bold text-primary mb-4" id="age-display">
+              25
+            </h1>
+            <input
+              type="range"
+              min="12"
+              max="65"
+              value="25"
+              oninput="document.getElementById('age-display').innerText = this.value"
+            />
+            <p class="mt-3 text-muted">Kéo để chọn tuổi</p>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="4">
+          <h3 class="fw-bold mb-2">Vị trí của bạn?</h3>
+          <p class="text-muted small mb-4">
+            Để lấy dữ liệu UV, Bụi mịn và Độ ẩm môi trường.
+          </p>
+          <div class="card border-0 bg-light p-4 text-center rounded-4">
+            <div class="mb-3">
+              <i class="fa-solid fa-map-location-dot fa-3x text-primary"></i>
+            </div>
+            <button
+              class="btn btn-brand mb-2"
+              onclick="alert('Đã lấy vị trí: TP.HCM (UV: 9.0)')"
+            >
+              <i class="fa-solid fa-location-arrow me-2"></i> Cho phép truy cập
+            </button>
+            <small class="text-muted d-block mt-2"
+              >Dữ liệu được bảo mật tuyệt đối.</small
+            >
+          </div>
+        </div>
+
+        <div class="step-content" data-step="5">
+          <h3 class="fw-bold mb-2">Độ nhạy cảm của da?</h3>
+          <div class="d-flex flex-column gap-3 mt-4">
+            <div
+              class="selection-card p-3 d-flex align-items-center text-start"
+              onclick="selectCard(this)"
+            >
+              <i class="fa-solid fa-shield-cat fs-3 me-3"></i>
+              <div>
+                <div class="fw-bold">Rất khỏe</div>
+                <small>Hiếm khi bị kích ứng</small>
+              </div>
+            </div>
+            <div
+              class="selection-card p-3 d-flex align-items-center text-start"
+              onclick="selectCard(this)"
+            >
+              <i class="fa-solid fa-face-meh fs-3 me-3"></i>
+              <div>
+                <div class="fw-bold">Bình thường</div>
+                <small>Thỉnh thoảng châm chích nhẹ</small>
+              </div>
+            </div>
+            <div
+              class="selection-card p-3 d-flex align-items-center text-start"
+              onclick="selectCard(this)"
+            >
+              <i class="fa-solid fa-face-flushed fs-3 me-3"></i>
+              <div>
+                <div class="fw-bold">Nhạy cảm</div>
+                <small>Dễ đỏ, ngứa với mỹ phẩm lạ</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="6">
+          <h3 class="fw-bold mb-2">Tần suất trang điểm?</h3>
+          <div class="row g-2 mt-3">
+            <div class="col-6">
+              <div
+                class="chip-option w-100 text-center py-3"
+                onclick="selectSimple(this)"
+              >
+                Không bao giờ
+              </div>
+            </div>
+            <div class="col-6">
+              <div
+                class="chip-option w-100 text-center py-3"
+                onclick="selectSimple(this)"
+              >
+                Chỉ dùng KCN
+              </div>
+            </div>
+            <div class="col-6">
+              <div
+                class="chip-option w-100 text-center py-3"
+                onclick="selectSimple(this)"
+              >
+                Nhẹ nhàng
+              </div>
+            </div>
+            <div class="col-6">
+              <div
+                class="chip-option w-100 text-center py-3"
+                onclick="selectSimple(this)"
+              >
+                Makeup đậm
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="7">
+          <h3 class="fw-bold mb-2">Thời gian tiếp xúc nắng?</h3>
+          <div class="d-flex flex-column gap-3 mt-3">
+            <div
+              class="chip-option text-center py-3"
+              onclick="selectSimple(this)"
+            >
+              Ít hơn 30 phút (Văn phòng)
+            </div>
+            <div
+              class="chip-option text-center py-3"
+              onclick="selectSimple(this)"
+            >
+              1 - 2 tiếng
+            </div>
+            <div
+              class="chip-option text-center py-3"
+              onclick="selectSimple(this)"
+            >
+              Nhiều hơn 4 tiếng (Ngoài trời)
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="8">
+          <h3 class="fw-bold mb-2">Routine hiện tại?</h3>
+          <div
+            class="selection-card mb-3 text-start mt-3"
+            onclick="selectCard(this)"
+          >
+            <div class="fw-bold text-primary">Beginner (Người mới)</div>
+            <small class="text-muted">Chỉ rửa mặt hoặc không dùng gì.</small>
+          </div>
+          <div
+            class="selection-card mb-3 text-start"
+            onclick="selectCard(this)"
+          >
+            <div class="fw-bold text-primary">Basic (Cơ bản)</div>
+            <small class="text-muted">Làm sạch + Dưỡng ẩm + Chống nắng.</small>
+          </div>
+          <div
+            class="selection-card mb-3 text-start"
+            onclick="selectCard(this)"
+          >
+            <div class="fw-bold text-primary">Advanced (Nâng cao)</div>
+            <small class="text-muted"
+              >Có dùng Treatment (BHA/Retinol/Serum).</small
+            >
+          </div>
+        </div>
+
+        <div class="step-content" data-step="9">
+          <h3 class="fw-bold mb-2">Yếu tố đời sống?</h3>
+          <p class="text-muted small mb-4">
+            Chọn các yếu tố bạn đang gặp phải.
+          </p>
+          <div class="d-flex flex-wrap">
+            <div class="chip-option" onclick="toggleChip(this)">
+              Thức khuya / Thiếu ngủ
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Căng thẳng (Stress)
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Uống ít nước
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Ăn nhiều đồ cay nóng
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Đang mang thai
+            </div>
+            <div class="chip-option" onclick="toggleChip(this)">
+              Rối loạn nội tiết
+            </div>
+          </div>
+        </div>
+
+        <div class="step-content" data-step="10">
+          <h3 class="fw-bold mb-2">Tiền sử kích ứng?</h3>
+          <p class="text-muted small mb-4">
+            Bạn có dị ứng với thành phần nào không?
+          </p>
+          <textarea
+            class="form-control bg-light border-0 rounded-4 p-3 mb-3"
+            rows="4"
+            placeholder="VD: Cồn, Hương liệu, Vitamin C..."
+          ></textarea>
+          <div class="d-flex gap-2">
+            <div class="chip-option bg-white border" onclick="toggleChip(this)">
+              Không rõ
+            </div>
+            <div class="chip-option bg-white border" onclick="toggleChip(this)">
+              Cồn
+            </div>
+            <div class="chip-option bg-white border" onclick="toggleChip(this)">
+              Paraben
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-white border-top sticky-bottom">
+        <button class="btn btn-brand" id="next-btn" onclick="nextStep()">
+          Tiếp theo
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let currentStep = 1;
+      const totalSteps = 10;
+
+      function updateUI() {
+        // Update Text & Progress
+        document.getElementById("current-step-num").innerText = currentStep;
+        document.getElementById("progress-bar").style.width =
+          (currentStep / totalSteps) * 100 + "%";
+
+        // Toggle Steps
+        document
+          .querySelectorAll(".step-content")
+          .forEach((el) => el.classList.remove("active"));
+        document
+          .querySelector(`.step-content[data-step="${currentStep}"]`)
+          .classList.add("active");
+
+        // Button Text
+        const btn = document.getElementById("next-btn");
+        btn.innerText =
+          currentStep === totalSteps ? "Hoàn tất & Phân tích" : "Tiếp theo";
+      }
+
+      function nextStep() {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          updateUI();
+        } else {
+          window.location.href = "camera.html";
+        }
+      }
+
+      function prevStep() {
+        if (currentStep > 1) {
+          currentStep--;
+          updateUI();
+        } else {
+          window.location.href = "home.html";
+        }
+      }
+
+      // Selection Helpers
+      function selectCard(card) {
+        // Remove selected from siblings
+        let container = card.parentElement.parentElement;
+        // Handle different layout structures (row cols vs direct flex)
+        if (
+          !container.classList.contains("row") &&
+          !container.classList.contains("d-flex")
+        )
+          container = card.parentElement;
+
+        // Xóa class selected ở các card khác (logic đơn giản hóa)
+        card
+          .closest(".step-content")
+          .querySelectorAll(".selection-card")
+          .forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+      }
+
+      function toggleChip(chip) {
+        chip.classList.toggle("selected");
+      }
+
+      function selectSimple(chip) {
+        chip
+          .closest(".step-content")
+          .querySelectorAll(".chip-option")
+          .forEach((c) => c.classList.remove("selected"));
+        chip.classList.add("selected");
+      }
+
+      // Init
+      updateUI();
+    </script>
+  </body>
+</html>

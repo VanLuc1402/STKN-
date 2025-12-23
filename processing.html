@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - AI Processing</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-color: #8e2de2;
+        --scan-color: #00ffea; /* Màu xanh neon Cyberpunk */
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        background-color: #000;
+      }
+
+      /* --- LOGIC HIỂN THỊ --- */
+      #desktop-landing {
+        display: block;
+        background: white;
+        min-height: 100vh;
+      }
+      #mobile-app-root {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-landing {
+          display: none !important;
+        }
+        #mobile-app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- DESKTOP CSS --- */
+      .hero-section {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        background-image: radial-gradient(#ddd 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* --- MOBILE APP CSS --- */
+      #mobile-app-root {
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+      }
+
+      /* 1. BACKGROUND IMAGE (Ảnh chụp từ bước trước) */
+      .scanned-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6; /* Làm tối ảnh đi */
+        filter: grayscale(80%) contrast(1.2); /* Hiệu ứng đen trắng kiểu X-ray */
+        position: absolute;
+        z-index: 1;
+      }
+
+      /* 2. SCANNING EFFECT LAYER */
+      .scan-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.8) 0%,
+          transparent 20%,
+          transparent 80%,
+          rgba(0, 0, 0, 0.8) 100%
+        );
+      }
+
+      /* Tia sáng quét dọc */
+      .scanner-beam {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--scan-color);
+        box-shadow: 0 0 15px var(--scan-color), 0 0 30px var(--scan-color);
+        animation: scanMove 2s infinite linear;
+        opacity: 0.8;
+        z-index: 3;
+      }
+      @keyframes scanMove {
+        0% {
+          top: 0%;
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          top: 100%;
+          opacity: 0;
+        }
+      }
+
+      /* Lưới toạ độ mặt (Face Mesh Simulation) */
+      .face-grid {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 60%;
+        background-image: linear-gradient(
+            rgba(0, 255, 234, 0.2) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(0, 255, 234, 0.2) 1px, transparent 1px);
+        background-size: 40px 40px;
+        border: 1px solid rgba(0, 255, 234, 0.3);
+        border-radius: 40%; /* Bo tròn giống khuôn mặt */
+        mask-image: radial-gradient(
+          ellipse at center,
+          black 40%,
+          transparent 80%
+        );
+        z-index: 2;
+      }
+
+      /* Các điểm chấm tracking (Landmarks) */
+      .dot {
+        width: 4px;
+        height: 4px;
+        background: var(--scan-color);
+        position: absolute;
+        border-radius: 50%;
+        box-shadow: 0 0 5px var(--scan-color);
+        animation: blink 1s infinite alternate;
+      }
+      @keyframes blink {
+        from {
+          opacity: 0.3;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* 3. TEXT & DATA DISPLAY */
+      .status-container {
+        position: absolute;
+        bottom: 10%;
+        width: 100%;
+        text-align: center;
+        z-index: 10;
+        color: white;
+        font-family: "Share Tech Mono", monospace; /* Font kiểu Hacker/Tech */
+      }
+
+      .status-text {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+        margin-top: 15px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(0, 255, 234, 0.5);
+      }
+
+      .loading-bar-container {
+        width: 60%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 0 auto;
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loading-bar-fill {
+        height: 100%;
+        background: var(--scan-color);
+        width: 0%;
+        transition: width 0.5s linear;
+        box-shadow: 0 0 10px var(--scan-color);
+      }
+
+      /* Spinner kỹ thuật số */
+      .tech-spinner {
+        width: 50px;
+        height: 50px;
+        border: 2px solid transparent;
+        border-top: 2px solid var(--scan-color);
+        border-right: 2px solid var(--scan-color);
+        border-radius: 50%;
+        margin: 0 auto;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-landing">
+      <div class="mb-4 text-primary">
+        <i class="fa-solid fa-microchip fa-4x"></i>
+      </div>
+      <h2 class="fw-bold">AI Processing Unit</h2>
+      <p class="text-muted">Đang mô phỏng quá trình xử lý hình ảnh.</p>
+      <div class="p-3 bg-light rounded mt-3">
+        <small>Thu nhỏ trình duyệt để xem.</small>
+      </div>
+    </div>
+
+    <div id="mobile-app-root">
+      <img
+        src="https://images.unsplash.com/photo-1554151228-14d9def656ec?q=80&w=1372&auto=format&fit=crop"
+        class="scanned-image"
+      />
+
+      <div class="scan-overlay">
+        <div class="scanner-beam"></div>
+
+        <div class="face-grid">
+          <div class="dot" style="top: 30%; left: 30%"></div>
+          <div class="dot" style="top: 30%; left: 70%"></div>
+          <div class="dot" style="top: 50%; left: 50%"></div>
+          <div class="dot" style="top: 70%; left: 40%"></div>
+          <div class="dot" style="top: 70%; left: 60%"></div>
+        </div>
+      </div>
+
+      <div class="status-container">
+        <div class="tech-spinner"></div>
+        <h3 class="status-text" id="ai-status">Khởi động AI...</h3>
+
+        <div class="loading-bar-container mt-3">
+          <div class="loading-bar-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="mt-2 text-white opacity-50 small">
+          SKINTHESIS ENGINE v2.0
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Các bước phân tích
+      const steps = [
+        { text: "Đang phân tích bề mặt...", progress: 20 },
+        { text: "Đang phát hiện mụn ẩn...", progress: 45 },
+        { text: "Đang soi cấu trúc collagen...", progress: 70 },
+        { text: "Đang đo sắc tố melanin...", progress: 85 },
+        { text: "Đang tổng hợp dữ liệu...", progress: 100 },
+      ];
+
+      let currentStep = 0;
+      const statusEl = document.getElementById("ai-status");
+      const progressEl = document.getElementById("progress-fill");
+
+      function runAnalysis() {
+        if (currentStep < steps.length) {
+          // Cập nhật text và thanh progress
+          statusEl.innerText = steps[currentStep].text;
+          progressEl.style.width = steps[currentStep].progress + "%";
+
+          currentStep++;
+
+          // Random thời gian cho mỗi bước (từ 0.8s đến 1.5s) để trông tự nhiên
+          const delay = Math.floor(Math.random() * 700) + 800;
+
+          setTimeout(runAnalysis, delay);
+        } else {
+          // Hoàn thành
+          setTimeout(() => {
+            window.location.href = "result.html";
+          }, 500);
+        }
+      }
+
+      // Bắt đầu chạy khi tải trang
+      document.addEventListener("DOMContentLoaded", () => {
+        // Delay 0.5s mới bắt đầu chạy để user kịp nhìn thấy ảnh
+        setTimeout(runAnalysis, 500);
+      });
+    </script>
+  </body>
+</html>

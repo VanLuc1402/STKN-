@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Onboarding</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        --primary-color: #4a00e0;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      /* --- LOGIC RESPONSIVE: PC vs MOBILE --- */
+      #desktop-message {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        justify-content: center;
+        align-items: center;
+        background: #f8f9fa;
+        flex-direction: column;
+        text-align: center;
+      }
+      #app-root {
+        display: none;
+        width: 100vw;
+        height: 100vh;
+        background: white;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-message {
+          display: none !important;
+        }
+        #app-root {
+          display: block !important;
+        }
+      }
+
+      /* --- UTILITIES --- */
+      .splash-bg {
+        background: var(--primary-gradient);
+        color: white;
+      }
+      .text-brand {
+        color: var(--primary-color);
+      }
+      .bg-icon-circle {
+        width: 200px;
+        height: 200px;
+        background-color: #f3e5f5; /* Tím rất nhạt */
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .btn-brand {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 16px;
+        font-weight: 700;
+        width: 100%;
+        font-size: 1rem;
+        box-shadow: 0 5px 15px rgba(74, 0, 224, 0.3);
+      }
+      .btn-text {
+        background: transparent;
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+        width: 100%;
+        padding: 10px;
+      }
+
+      /* Carousel Dots */
+      .carousel-indicators [data-bs-target] {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #ddd;
+        border: none;
+        margin: 0 5px;
+      }
+      .carousel-indicators .active {
+        background-color: var(--primary-color);
+        width: 25px;
+        border-radius: 10px; /* Dot dài khi active */
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-message">
+      <i class="fa-solid fa-mobile-screen-button fa-3x text-primary mb-3"></i>
+      <h3>Chế độ Mobile App</h3>
+      <p class="text-muted">Thu nhỏ trình duyệt để xem Screen 1.2</p>
+    </div>
+
+    <div id="app-root"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // 1. SPLASH SCREEN (Screen 1.1)
+      const Splash = () => `
+            <div class="h-100 w-100 d-flex flex-column justify-content-center align-items-center splash-bg fade-in">
+                <img 
+  <img src="/GUI_Skinthesis-main/asset/Logo.png">
+                <h1 class="fw-bold mb-2">SKINTHESIS</h1>
+                <p class="fs-6 opacity-75">Làm đẹp cùng AI</p>
+                <div class="position-absolute bottom-0 mb-5">
+                    <div class="spinner-border text-white" role="status"></div>
+                </div>
+            </div>
+        `;
+
+      // 2. ONBOARDING CAROUSEL (Screen 1.2) - TRỌNG TÂM
+      const Onboarding = () => `
+            <div class="d-flex flex-column h-100 fade-in bg-white">
+                
+                <div id="onboardingCarousel" class="carousel slide flex-grow-1" data-bs-interval="false" data-bs-touch="true">
+                    
+                    <div class="carousel-inner h-100">
+                        
+                        <div class="carousel-item active h-100">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100 p-4 text-center">
+                                <div class="bg-icon-circle">
+                                    <i class="fa-solid fa-user-doctor text-brand" style="font-size: 80px;"></i>
+                                </div>
+                                <h2 class="fw-bold mb-3">Bác sĩ da liễu ảo 24/7</h2>
+                                <p class="text-muted px-2">
+                                    Công nghệ AI quét mặt 3 lớp, phân tích tình trạng da chuẩn xác mọi lúc mọi nơi.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="carousel-item h-100">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100 p-4 text-center">
+                                <div class="bg-icon-circle">
+                                    <i class="fa-solid fa-list-check text-brand" style="font-size: 80px;"></i>
+                                </div>
+                                <h2 class="fw-bold mb-3">Cá nhân hóa lộ trình</h2>
+                                <p class="text-muted px-2">
+                                    Xây dựng thói quen chăm sóc da 21 ngày dựa trên dữ liệu thực tế của bạn.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="carousel-item h-100">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100 p-4 text-center">
+                                <div class="bg-icon-circle">
+                                    <i class="fa-solid fa-shield-halved text-brand" style="font-size: 80px;"></i>
+                                </div>
+                                <h2 class="fw-bold mb-3">Mua sắm An toàn</h2>
+                                <p class="text-muted px-2">
+                                    100% Mỹ phẩm được kiểm định. Truy xuất nguồn gốc minh bạch.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="carousel-indicators mb-4">
+                        <button type="button" data-bs-target="#onboardingCarousel" data-bs-slide-to="0" class="active"></button>
+                        <button type="button" data-bs-target="#onboardingCarousel" data-bs-slide-to="1"></button>
+                        <button type="button" data-bs-target="#onboardingCarousel" data-bs-slide-to="2"></button>
+                    </div>
+
+                </div>
+
+                <div class="p-4 w-100 pb-5">
+                    <button class="btn btn-brand mb-3" onclick="window.location.href='login.html'">Bắt đầu</button>
+                    <button class="btn btn-text" onclick="window.location.href='login.html'">Bỏ qua</button>
+                </div>
+
+            </div>
+        `;
+
+      // --- ĐIỀU HƯỚNG ---
+      document.addEventListener("DOMContentLoaded", () => {
+        const root = document.getElementById("app-root");
+
+        // B1: Hiện Splash Screen trước
+        root.innerHTML = Splash();
+
+        // B2: Sau 2.5 giây -> Chuyển sang Onboarding Screen
+        setTimeout(() => {
+          root.innerHTML = Onboarding();
+
+          // Kích hoạt Carousel của Bootstrap sau khi render HTML
+          // Để đảm bảo tính năng vuốt hoạt động mượt mà
+          const myCarousel = document.getElementById("onboardingCarousel");
+          new bootstrap.Carousel(myCarousel);
+        }, 2500);
+      });
+    </script>
+  </body>
+</html>

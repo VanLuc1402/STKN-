@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Create Post</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #ffffff;
+        --primary: #7000ff;
+        --text-dark: #2d3436;
+        --text-grey: #636e72;
+        --border-color: #f0f2f5;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        color: var(--text-dark);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- 1. HEADER --- */
+      .composer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .header-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+      .btn-cancel {
+        color: var(--text-dark);
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        padding: 0;
+      }
+      .btn-post {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 20px;
+        font-weight: 600;
+        opacity: 0.5;
+        cursor: not-allowed;
+        transition: 0.3s;
+      }
+      .btn-post.active {
+        opacity: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(112, 0, 255, 0.3);
+      }
+
+      /* --- 2. EDITOR AREA --- */
+      .editor-container {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .user-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .user-avt {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .user-name {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      .privacy-pill {
+        font-size: 0.75rem;
+        color: var(--text-grey);
+        background: #f0f2f5;
+        padding: 4px 10px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: fit-content;
+        margin-top: 2px;
+      }
+
+      .text-input {
+        width: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        font-size: 1.1rem;
+        min-height: 120px;
+        font-family: inherit;
+      }
+      .text-input::placeholder {
+        color: #ccc;
+      }
+
+      /* Media Previews */
+      .media-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .preview-item {
+        position: relative;
+        aspect-ratio: 1/1;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .btn-remove-media {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.8rem;
+      }
+
+      /* Tagged Product Card */
+      .tagged-product-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f8f9fa;
+        border: 1px solid #eae6ff;
+        padding: 10px;
+        border-radius: 16px;
+        position: relative;
+        animation: fadeIn 0.3s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .tp-thumb {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: white;
+      }
+      .tp-info {
+        flex: 1;
+      }
+      .tp-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .tp-price {
+        font-size: 0.8rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .btn-remove-tag {
+        color: #999;
+        padding: 10px;
+        cursor: pointer;
+      }
+
+      /* --- 3. BOTTOM TOOLBAR --- */
+      .bottom-toolbar {
+        border-top: 1px solid var(--border-color);
+        padding: 12px 20px;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .tool-label {
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        font-weight: 600;
+      }
+
+      .tools-group {
+        display: flex;
+        gap: 20px;
+      }
+      .tool-btn {
+        font-size: 1.4rem;
+        color: var(--primary);
+        cursor: pointer;
+        position: relative;
+      }
+      .tool-btn i {
+        transition: 0.2s;
+      }
+      .tool-btn:active i {
+        transform: scale(0.9);
+      }
+
+      /* --- 4. PRODUCT SEARCH MODAL (Slide Up) --- */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .modal-sheet {
+        background: white;
+        border-radius: 24px 24px 0 0;
+        height: 80vh;
+        width: 100%;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      .modal-handle {
+        width: 40px;
+        height: 4px;
+        background: #eee;
+        border-radius: 10px;
+        margin: 0 auto 20px auto;
+        flex-shrink: 0;
+      }
+
+      .search-box-modal {
+        background: #f0f2f5;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .search-box-modal input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        outline: none;
+      }
+
+      .product-list-modal {
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .p-item-modal {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f8f8f8;
+      }
+      .p-item-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .p-item-info {
+        flex: 1;
+      }
+      .p-item-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .btn-select {
+        background: var(--text-dark);
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="composer-header">
+      <button class="btn-cancel" onclick="window.location.href='home.html'">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <span class="header-title">Tạo bài viết</span>
+      <button
+        class="btn-post"
+        id="btn-post"
+        onclick="alert('Đăng bài thành công!')"
+      >
+        Đăng
+      </button>
+    </header>
+
+    <div class="editor-container">
+      <div class="user-row">
+        <img src="https://i.pravatar.cc/150?img=3" class="user-avt" />
+        <div>
+          <div class="user-name">Bạn (An)</div>
+          <div class="privacy-pill">
+            <i class="fa-solid fa-earth-americas"></i> Công khai
+          </div>
+        </div>
+      </div>
+
+      <textarea
+        class="text-input"
+        id="post-input"
+        placeholder="Bạn đang nghĩ gì về làn da hôm nay?"
+        oninput="checkInput()"
+      ></textarea>
+
+      <div id="tagged-area"></div>
+
+      <div class="media-preview-grid" id="preview-area"></div>
+    </div>
+
+    <div class="bottom-toolbar">
+      <span class="tool-label">Thêm vào bài viết</span>
+      <div class="tools-group">
+        <div class="tool-btn" onclick="triggerImageUpload()">
+          <i class="fa-regular fa-image"></i>
+        </div>
+        <div class="tool-btn" onclick="openProductModal()">
+          <i class="fa-solid fa-tag"></i>
+        </div>
+        <div class="tool-btn"><i class="fa-solid fa-face-smile"></i></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="productModal">
+      <div class="modal-sheet">
+        <div class="modal-handle" onclick="closeProductModal()"></div>
+        <h5 class="fw-bold mb-3">Gắn thẻ sản phẩm</h5>
+
+        <div class="search-box-modal">
+          <i class="fa-solid fa-magnifying-glass text-muted"></i>
+          <input
+            type="text"
+            placeholder="Tìm tên sản phẩm (VD: Retinol, B5...)"
+          />
+        </div>
+
+        <div class="product-list-modal">
+          <div class="p-item-modal">
+            <img
+              src="https://i.pinimg.com/1200x/76/e9/a2/76e9a2cb3bfb3dbbc9e43ffe9bd8b044.jpg"
+              class="p-item-img"
+            />
+            <div class="p-item-info">
+              <div class="p-item-name">Serum B5 La Roche-Posay</div>
+              <small class="text-muted">850.000đ</small>
+            </div>
+            <button
+              class="btn-select"
+              onclick="selectProduct('Serum B5 La Roche-Posay', '850.000đ', 'https://placehold.co/100x100?text=B5')"
+            >
+              Chọn
+            </button>
+          </div>
+
+          <div class="p-item-modal">
+            <img
+              src="https://i.pinimg.com/736x/88/2c/4a/882c4a6b93e0f1446da171aa21aecf79.jpg"
+              class="p-item-img"
+            />
+            <div class="p-item-info">
+              <div class="p-item-name">KCN Anthelios Vạch Vàng</div>
+              <small class="text-muted">415.000đ</small>
+            </div>
+            <button
+              class="btn-select"
+              onclick="selectProduct('KCN Anthelios', '415.000đ', 'https://placehold.co/100x100?text=KCN')"
+            >
+              Chọn
+            </button>
+          </div>
+
+          <div class="p-item-modal">
+            <img
+              src="https://i.pinimg.com/1200x/8f/74/c3/8f74c39ea2d39149c07d37422aa90001.jpg"
+              class="p-item-img"
+            />
+            <div class="p-item-info">
+              <div class="p-item-name">Sữa rửa mặt SVR</div>
+              <small class="text-muted">350.000đ</small>
+            </div>
+            <button
+              class="btn-select"
+              onclick="selectProduct('Sữa rửa mặt SVR', '350.000đ', 'https://placehold.co/100x100?text=SVR')"
+            >
+              Chọn
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const btnPost = document.getElementById("btn-post");
+      const postInput = document.getElementById("post-input");
+      const modal = document.getElementById("productModal");
+      const taggedArea = document.getElementById("tagged-area");
+      const previewArea = document.getElementById("preview-area");
+
+      // Enable button when typing
+      function checkInput() {
+        if (postInput.value.trim().length > 0) {
+          btnPost.classList.add("active");
+        } else {
+          btnPost.classList.remove("active");
+        }
+      }
+
+      // --- MEDIA LOGIC ---
+      function triggerImageUpload() {
+        // Giả lập chọn ảnh
+        const dummyImg =
+          "https://i.pinimg.com/1200x/98/6c/43/986c4321b90af179a11d88a9c82fe829.jpg";
+        const html = `
+                <div class="preview-item">
+                    <img src="${dummyImg}" class="preview-img">
+                    <div class="btn-remove-media" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+            `;
+        previewArea.insertAdjacentHTML("beforeend", html);
+        btnPost.classList.add("active");
+      }
+
+      // --- PRODUCT TAG LOGIC ---
+      function openProductModal() {
+        modal.style.display = "flex";
+      }
+
+      function closeProductModal() {
+        modal.style.display = "none";
+      }
+
+      function selectProduct(name, price, img) {
+        // Tạo thẻ sản phẩm đã gắn
+        const html = `
+                <div class="tagged-product-card">
+                    <img src="${img}" class="tp-thumb">
+                    <div class="tp-info">
+                        <div class="tp-name">${name}</div>
+                        <div class="tp-price">${price}</div>
+                    </div>
+                    <div class="btn-remove-tag" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+            `;
+        taggedArea.innerHTML = html; // Chỉ cho tag 1 sp demo
+        closeProductModal();
+        btnPost.classList.add("active");
+      }
+
+      // Close modal when click outside sheet
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeProductModal();
+      });
+    </script>
+  </body>
+</html>

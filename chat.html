@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - AI Assistant</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #f4f6f9;
+        --primary: #7000ff;
+        --primary-gradient: linear-gradient(135deg, #7000ff 0%, #ff0055 100%);
+        --bot-bubble: #ffffff;
+        --text-dark: #2d3436;
+        --glass: rgba(255, 255, 255, 0.9);
+        --blur: blur(15px);
+        --accent: #ff0055;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #app-root {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      /* --- 1. HEADER --- */
+      .chat-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        padding: 0 20px;
+        z-index: 100;
+        background: var(--glass);
+        backdrop-filter: var(--blur);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .bot-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .bot-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ddd, #fff);
+        padding: 2px;
+        border: 2px solid var(--primary);
+        position: relative;
+      }
+      .bot-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        background: #00d2ff;
+        border: 2px solid white;
+        border-radius: 50%;
+      }
+      .bot-text h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0;
+      }
+      .bot-status {
+        font-size: 0.75rem;
+        color: #00d2ff;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* --- 2. CHAT AREA --- */
+      .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 90px 20px 150px 20px; /* Padding dưới lớn hơn để né input */
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        scroll-behavior: smooth;
+      }
+      .chat-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      .msg-row {
+        display: flex;
+        width: 100%;
+      }
+      .msg-row.user {
+        justify-content: flex-end;
+      }
+      .msg-row.bot {
+        justify-content: flex-start;
+      }
+
+      .bubble {
+        max-width: 75%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      .msg-row.user .bubble {
+        background: var(--primary-gradient);
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+      .msg-row.bot .bubble {
+        background: var(--bot-bubble);
+        color: var(--text-dark);
+        border-top-left-radius: 4px;
+        border: 1px solid #eee;
+      }
+      .bot-icon-small {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 8px;
+        margin-top: 5px;
+        background: #eee;
+        overflow: hidden;
+      }
+      .bot-icon-small img {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Product Card */
+      .product-card-chat {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        width: 220px;
+        margin-top: 8px;
+        border: 1px solid #eee;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      .p-img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+      }
+      .p-body {
+        padding: 12px;
+      }
+      .p-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+      .p-price {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1rem;
+      }
+      .btn-chat-buy {
+        width: 100%;
+        background: #1f1d2b;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 8px;
+        cursor: pointer;
+      }
+
+      /* Typing */
+      .typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 10px 14px;
+        background: white;
+        border-radius: 18px;
+        width: fit-content;
+        border: 1px solid #eee;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: #ccc;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+      }
+      .dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      /* --- 3. SUGGESTIONS --- */
+      .chips-container {
+        position: absolute;
+        bottom: 85px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px 20px;
+        z-index: 90;
+        scrollbar-width: none;
+        background: linear-gradient(
+          to top,
+          rgba(244, 246, 249, 1) 40%,
+          rgba(244, 246, 249, 0)
+        );
+      }
+      .chips-container::-webkit-scrollbar {
+        display: none;
+      }
+      .chip {
+        background: white;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: 0 4px 10px rgba(112, 0, 255, 0.1);
+      }
+      .chip:active {
+        background: var(--primary);
+        color: white;
+      }
+
+      /* --- 4. INPUT AREA (Updated) --- */
+      .input-area {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 85px;
+        background: white;
+        padding: 10px 20px 25px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.03);
+        z-index: 100;
+      }
+
+      /* Nút Scan Mặt (Mới) */
+      .btn-action-scan {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        border: none;
+        background: #f0f2f5;
+        color: var(--primary);
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-action-scan:active {
+        background: #eae6ff;
+        transform: scale(0.95);
+      }
+
+      .chat-input-wrapper {
+        flex: 1;
+        position: relative;
+      }
+      .chat-input {
+        width: 100%;
+        height: 48px;
+        background: #f4f6f9;
+        border: 1px solid transparent;
+        border-radius: 24px;
+        padding: 0 45px 0 20px;
+        font-size: 1rem;
+        outline: none;
+      }
+      .chat-input:focus {
+        border-color: var(--primary);
+        background: white;
+      }
+
+      .btn-mic {
+        position: absolute;
+        right: 5px;
+        top: 4px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #888;
+        cursor: pointer;
+      }
+
+      .btn-send {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(112, 0, 255, 0.3);
+        transition: 0.2s;
+      }
+      .btn-send:active {
+        transform: scale(0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <header class="chat-header">
+        <div class="bot-info">
+          <div class="bot-avatar">
+            <img src="https://placehold.co/100x100/7000FF/FFF?text=AI" />
+            <div class="status-dot"></div>
+          </div>
+          <div class="bot-text">
+            <h4>Skinthesis Assistant</h4>
+            <div class="bot-status">
+              <i class="fa-solid fa-bolt"></i> Online
+            </div>
+          </div>
+        </div>
+        <button
+          class="btn btn-light rounded-circle border-0 bg-transparent"
+          onclick="window.location.href='home.html'"
+        >
+          <i class="fa-solid fa-xmark fa-lg"></i>
+        </button>
+      </header>
+
+      <div class="chat-container" id="chat-feed">
+        <div class="msg-row bot">
+          <div class="bot-icon-small">
+            <img src="https://placehold.co/50x50/7000FF/FFF?text=AI" />
+          </div>
+          <div class="bubble">
+            Chào An! Mình có thể giúp gì cho làn da của bạn hôm nay?
+          </div>
+        </div>
+
+        <div class="msg-row bot" id="typing-indicator" style="display: none">
+          <div class="bot-icon-small">
+            <img src="https://placehold.co/50x50/7000FF/FFF?text=AI" />
+          </div>
+          <div class="typing-indicator">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chips-container">
+        <div class="chip" onclick="sendMsg('Da tôi đang bị mụn')">
+          Da tôi đang bị mụn
+        </div>
+        <div class="chip" onclick="sendMsg('Kiểm tra routine')">
+          Kiểm tra routine
+        </div>
+        <div class="chip" onclick="sendMsg('Tư vấn sản phẩm')">
+          Tư vấn sản phẩm
+        </div>
+      </div>
+
+      <footer class="input-area">
+        <button class="btn-action-scan" onclick="triggerScan()">
+          <i class="fa-solid fa-camera-rotate"></i>
+        </button>
+
+        <div class="chat-input-wrapper">
+          <input
+            type="text"
+            class="chat-input"
+            id="msg-input"
+            placeholder="Nhập tin nhắn..."
+          />
+          <button class="btn-mic">
+            <i class="fa-solid fa-microphone"></i>
+          </button>
+        </div>
+
+        <button class="btn-send" onclick="handleSend()">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </footer>
+    </div>
+
+    <script>
+      const chatFeed = document.getElementById("chat-feed");
+      const input = document.getElementById("msg-input");
+      const typing = document.getElementById("typing-indicator");
+
+      function scrollToBottom() {
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+      }
+
+      function sendMsg(text) {
+        if (!text) return;
+        // User Msg
+        const userHTML = `<div class="msg-row user"><div class="bubble">${text}</div></div>`;
+        typing.insertAdjacentHTML("beforebegin", userHTML);
+
+        input.value = "";
+        scrollToBottom();
+
+        // Bot Reply Simulation
+        showTyping(true);
+        setTimeout(() => {
+          showTyping(false);
+          replyBot(
+            "Mình đã nhận được thông tin. Bạn có muốn quét da để mình phân tích kỹ hơn không?"
+          );
+        }, 1500);
+      }
+
+      function handleSend() {
+        sendMsg(input.value);
+      }
+      input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleSend();
+      });
+
+      function replyBot(text) {
+        const botHTML = `<div class="msg-row bot"><div class="bot-icon-small"><img src="https://placehold.co/50x50/7000FF/FFF?text=AI"></div><div class="bubble">${text}</div></div>`;
+        typing.insertAdjacentHTML("beforebegin", botHTML);
+        scrollToBottom();
+      }
+
+      function showTyping(show) {
+        typing.style.display = show ? "flex" : "none";
+        scrollToBottom();
+      }
+
+      // --- HÀM XỬ LÝ NÚT SCAN ---
+      function triggerScan() {
+        // 1. User gửi yêu cầu scan
+        const userHTML = `<div class="msg-row user"><div class="bubble"><i class="fa-solid fa-face-viewfinder me-2"></i> Gửi yêu cầu quét da...</div></div>`;
+        typing.insertAdjacentHTML("beforebegin", userHTML);
+        scrollToBottom();
+
+        // 2. Bot phản hồi và mở Camera (Giả lập)
+        showTyping(true);
+        setTimeout(() => {
+          showTyping(false);
+          alert("Đang mở Camera AI Scan...");
+          // Logic chuyển trang thật: window.location.href = 'camera.html';
+
+          // Giả lập sau khi scan xong:
+          replyBot(
+            "Đã nhận dữ liệu khuôn mặt. Da bạn có vẻ đang thiếu ẩm vùng chữ T."
+          );
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Ultimate Shop</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #f5f7fa;
+        --primary: #7000ff;
+        --primary-dark: #5a00cc;
+        --accent-red: #ff4757;
+        --accent-green: #2ed573;
+        --accent-gold: #ffc107;
+        --text-dark: #2d3436;
+        --text-grey: #888;
+        --glass: rgba(255, 255, 255, 0.95);
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        color: var(--text-dark);
+      }
+
+      #app-root {
+        max-width: 100vw;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 80px; /* Space for Bottom Nav */
+      }
+
+      /* --- UTILS --- */
+      .h-scroll {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        scrollbar-width: none;
+        position: relative;
+        z-index: 2;
+        scroll-snap-type: x mandatory;
+      }
+      .h-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .view-all {
+        font-size: 0.85rem;
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      /* --- 1. STICKY SEARCH HEADER --- */
+      .shop-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      }
+      .search-wrapper {
+        flex: 1;
+        position: relative;
+      }
+      .search-input {
+        width: 100%;
+        height: 40px;
+        background: #f0f2f5;
+        border: none;
+        border-radius: 20px;
+        padding-left: 40px;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
+      .search-input:focus {
+        background: white;
+        box-shadow: 0 0 0 2px var(--primary);
+        outline: none;
+      }
+      .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 10px;
+        color: #888;
+      }
+      .cart-btn {
+        position: relative;
+        font-size: 1.4rem;
+        color: #333;
+        cursor: pointer;
+      }
+      .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--accent-red);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 10px;
+      }
+
+      /* --- NEW: HERO BANNER CAROUSEL --- */
+      .banner-section {
+        padding: 15px 20px 0 20px;
+      }
+      .banner-carousel {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+      .banner-carousel::-webkit-scrollbar {
+        display: none;
+      }
+      .banner-item {
+        min-width: 100%;
+        height: 150px;
+        border-radius: 16px;
+        overflow: hidden;
+        scroll-snap-align: center;
+        position: relative;
+      }
+      .banner-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* --- 2. CATEGORIES GRID --- */
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        padding: 24px 20px 10px 20px;
+      }
+      .cat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .cat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 20px;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        color: var(--primary);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        transition: 0.2s;
+      }
+      .cat-item:active .cat-icon {
+        transform: scale(0.95);
+      }
+      .cat-name {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #555;
+      }
+      .bg-blue-light {
+        background: #e3f2fd;
+        color: #2196f3;
+      }
+      .bg-purple-light {
+        background: #f3e5f5;
+        color: #9c27b0;
+      }
+      .bg-orange-light {
+        background: #fff3e0;
+        color: #ff9800;
+      }
+      .bg-green-light {
+        background: #e8f5e9;
+        color: #4caf50;
+      }
+
+      /* --- 3. AI PERSONALIZED SECTION --- */
+      .ai-section {
+        margin: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #1f1d2b 0%, #302b63 100%);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 10px 30px rgba(48, 43, 99, 0.3);
+      }
+      .ai-bg-glow {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(
+          circle,
+          rgba(112, 0, 255, 0.4) 0%,
+          transparent 70%
+        );
+        border-radius: 50%;
+      }
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin-bottom: 16px;
+        position: relative;
+        z-index: 2;
+      }
+      .ai-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+      .ai-sub {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        font-weight: 400;
+      }
+      .ai-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .prod-card-ai {
+        min-width: 140px;
+        background: white;
+        border-radius: 16px;
+        padding: 10px;
+        color: var(--text-dark);
+        position: relative;
+      }
+      .match-tag {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: var(--accent-green);
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 3px 6px;
+        border-radius: 6px;
+      }
+      .prod-img {
+        width: 100%;
+        height: 100px;
+        object-fit: contain;
+        margin-bottom: 8px;
+      }
+      .prod-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .prod-price {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .btn-add-mini {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        background: #f0f2f5;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--primary);
+        font-size: 0.9rem;
+      }
+
+      /* --- 4. FLASH SALE SECTION --- */
+      .flash-section {
+        padding: 10px 20px 30px 20px;
+      }
+      .flash-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .flash-title {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: var(--accent-red);
+        font-style: italic;
+      }
+      .timer-box {
+        display: flex;
+        gap: 4px;
+      }
+      .time-block {
+        background: var(--text-dark);
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .prod-card-flash {
+        min-width: 130px;
+        border: 1px solid #eee;
+        background: white;
+        border-radius: 16px;
+        padding: 10px;
+        position: relative;
+      }
+      .sale-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #ffe0e3;
+        color: var(--accent-red);
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 4px 8px;
+        border-radius: 0 16px 0 10px;
+      }
+      .old-price {
+        font-size: 0.7rem;
+        text-decoration: line-through;
+        color: #999;
+      }
+
+      /* --- NEW: OFFICIAL BRANDS --- */
+      .brand-section {
+        padding: 0 20px 30px 20px;
+      }
+      .brand-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 70px;
+      }
+      .brand-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 1px solid #eee;
+        padding: 5px;
+        object-fit: contain;
+        background: white;
+      }
+      .brand-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-grey);
+      }
+
+      /* --- NEW: TRENDING LIST --- */
+      .trending-section {
+        padding: 0 20px 30px 20px;
+      }
+      .trend-list {
+        background: white;
+        border-radius: 20px;
+        padding: 5px 20px;
+      }
+      .trend-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .trend-item:last-child {
+        border-bottom: none;
+      }
+      .trend-rank {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--text-grey);
+        width: 24px;
+        text-align: center;
+      }
+      .trend-rank.top-1 {
+        color: var(--accent-gold);
+      }
+      .trend-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        object-fit: cover;
+      }
+      .trend-info {
+        flex: 1;
+      }
+      .trend-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+      .trend-meta {
+        font-size: 0.75rem;
+        color: var(--text-grey);
+      }
+
+      /* --- NEW: MASONRY FEED (Gợi ý hôm nay) --- */
+      .feed-section {
+        padding: 0 20px 20px 20px;
+      }
+      .masonry-grid {
+        column-count: 2;
+        column-gap: 15px;
+      }
+      .feed-card {
+        break-inside: avoid;
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+      }
+      .feed-img {
+        width: 100%;
+        display: block;
+      }
+      .feed-body {
+        padding: 12px;
+      }
+      .feed-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .feed-price {
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 0.95rem;
+      }
+      .feed-sold {
+        font-size: 0.7rem;
+        color: var(--text-grey);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <div class="container py-4">
+        <button
+          class="btn btn-light mb-3"
+          onclick="window.location.href='home.html'"
+        >
+          <i class="fa-solid fa-arrow-left"></i> Về Trang chủ
+        </button>
+
+        <header class="shop-header">
+          <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm kiếm sản phẩm, thương hiệu..."
+            />
+          </div>
+          <div class="cart-btn" onclick="alert('Giỏ hàng trống')">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <div class="cart-badge">2</div>
+          </div>
+        </header>
+
+        <div class="banner-section">
+          <div class="banner-carousel">
+            <div class="banner-item">
+              <img
+                src="https://i.pinimg.com/736x/f8/d3/7b/f8d37bda5a2dcad7272c86b524c3229a.jpg"
+                class="banner-img"
+              />
+            </div>
+            <div class="banner-item">
+              <img
+                src="https://i.pinimg.com/474x/09/be/f4/09bef4d3c5d3b436fc334b7ba2dcbab2.jpg"
+                class="banner-img"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="cat-grid">
+          <div class="cat-item">
+            <div class="cat-icon bg-blue-light">
+              <i class="fa-solid fa-soap"></i>
+            </div>
+            <span class="cat-name">Làm sạch</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-icon bg-purple-light">
+              <i class="fa-solid fa-droplet"></i>
+            </div>
+            <span class="cat-name">Cấp ẩm</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-icon bg-orange-light">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <span class="cat-name">Đặc trị</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-icon bg-green-light">
+              <i class="fa-solid fa-sun"></i>
+            </div>
+            <span class="cat-name">Chống nắng</span>
+          </div>
+        </div>
+
+        <div class="ai-section">
+          <div class="ai-bg-glow"></div>
+          <div class="section-head">
+            <div>
+              <div class="ai-sub">
+                <i class="fa-solid fa-robot me-1"></i> AI Recommendation
+              </div>
+              <div class="ai-title">Dành cho da Dầu & Mụn</div>
+            </div>
+            <div class="ai-badge">Độ khớp cao</div>
+          </div>
+          <div class="h-scroll">
+            <div class="prod-card-ai">
+              <div class="match-tag">98% Match</div>
+              <img
+                src="https://i.pinimg.com/1200x/97/b7/3a/97b73acd08d23dc3c31e3b687ff983ce.jpg"
+                class="prod-img"
+              />
+              <div class="prod-title">SVR Sebiaclear Gel</div>
+              <div class="prod-price">350.000đ</div>
+              <div class="btn-add-mini"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="prod-card-ai">
+              <div class="match-tag">95% Match</div>
+              <img
+                src="https://i.pinimg.com/1200x/52/66/2b/52662ba6ba99062376c0eed1eb38120c.jpg"
+                class="prod-img"
+              />
+              <div class="prod-title">Obagi BHA 2%</div>
+              <div class="prod-price">680.000đ</div>
+              <div class="btn-add-mini"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="prod-card-ai">
+              <div class="match-tag">92% Match</div>
+              <img
+                src="https://i.pinimg.com/736x/5a/b7/db/5ab7db32ab2b495b324b512aff03e7fb.jpg"
+                class="prod-img"
+              />
+              <div class="prod-title">Mặt nạ bí đao</div>
+              <div class="prod-price">180.000đ</div>
+              <div class="btn-add-mini"><i class="fa-solid fa-plus"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flash-section">
+          <div class="flash-header">
+            <div class="flash-title">FLASH SALE</div>
+            <div class="timer-box">
+              <div class="time-block">02</div>
+              :
+              <div class="time-block">15</div>
+              :
+              <div class="time-block" id="sec-ticker">40</div>
+            </div>
+          </div>
+          <div class="h-scroll">
+            <div class="prod-card-flash">
+              <div class="sale-tag">-40%</div>
+              <img
+                src="https://i.pinimg.com/1200x/b0/cc/59/b0cc5937e0edaccefaf66a6fccb482c0.jpg"
+                class="prod-img"
+              />
+              <div class="prod-title">Serum Vitamin C</div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="prod-price text-danger">250k</div>
+                <div class="old-price">420k</div>
+              </div>
+              <div class="progress mt-2" style="height: 3px">
+                <div class="progress-bar bg-danger" style="width: 80%"></div>
+              </div>
+            </div>
+            <div class="prod-card-flash">
+              <div class="sale-tag">-30%</div>
+              <img
+                src="https://i.pinimg.com/1200x/3d/59/d7/3d59d7a9bc10deea0c6ea0778c467208.jpg"
+                class="prod-img"
+              />
+              <div class="prod-title">Kem dưỡng ẩm</div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="prod-price text-danger">310k</div>
+                <div class="old-price">450k</div>
+              </div>
+              <div class="progress mt-2" style="height: 3px">
+                <div class="progress-bar bg-danger" style="width: 40%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brand-section">
+          <div class="section-title">
+            <span>Thương hiệu chính hãng</span>
+            <a href="#" class="view-all">Xem tất cả</a>
+          </div>
+          <div class="h-scroll">
+            <div class="brand-item">
+              <img
+                src="https://i.pinimg.com/736x/22/47/2f/22472f8c4f3960fce7facc37e59b87e0.jpg"
+                class="brand-logo"
+              /><span class="brand-name">La Roche</span>
+            </div>
+            <div class="brand-item">
+              <img
+                src="https://i.pinimg.com/1200x/d0/96/a2/d096a20a7c104e03b8c66ae93e955d70.jpg"
+                class="brand-logo"
+              /><span class="brand-name">SVR</span>
+            </div>
+            <div class="brand-item">
+              <img
+                src="https://i.pinimg.com/736x/b6/90/40/b69040e03064180507f30a45c4554067.jpg"
+                class="brand-logo"
+              /><span class="brand-name">Skin1004</span>
+            </div>
+            <div class="brand-item">
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlwYfsfMDOl1I9Na06sRoxKqLskUs--gJ7vQ&s"
+                class="brand-logo"
+              /><span class="brand-name">Obagi</span>
+            </div>
+            <div class="brand-item">
+              <img
+                src="https://i.pinimg.com/1200x/fb/af/09/fbaf09bc40a51192ff2b2db53f4b6e9f.jpg"
+                class="brand-logo"
+              /><span class="brand-name">Vichy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trending-section">
+          <div class="section-title">
+            <span>Top Tìm Kiếm Tuần Này</span>
+          </div>
+          <div class="trend-list">
+            <div class="trend-item">
+              <div class="trend-rank top-1">1</div>
+              <img
+                src="https://i.pinimg.com/736x/30/cb/c8/30cbc88fe7f7a612d35081159ca8d40a.jpg"
+                class="trend-img"
+              />
+              <div class="trend-info">
+                <div class="trend-name">Kem chống nắng cho da dầu</div>
+                <div class="trend-meta">15.2k lượt tìm kiếm</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-muted"></i>
+            </div>
+            <div class="trend-item">
+              <div class="trend-rank">2</div>
+              <img src="https://i.pinimg.com/736x/b4/e0/40/b4e040bb9c0f1ceafd5eb39a69593ea6.jpg" class="trend-img" />
+              <div class="trend-info">
+                <div class="trend-name">Serum B5 phục hồi</div>
+                <div class="trend-meta">10.5k lượt tìm kiếm</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-muted"></i>
+            </div>
+            <div class="trend-item">
+              <div class="trend-rank">3</div>
+              <img
+                src="https://i.pinimg.com/736x/bc/6e/85/bc6e856c5002ec25c32ae97461c348f3.jpg"
+                class="trend-img"
+              />
+              <div class="trend-info">
+                <div class="trend-name">Retinol cho người mới</div>
+                <div class="trend-meta">8.1k lượt tìm kiếm</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-muted"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="feed-section">
+          <div class="section-title">
+            <span>Gợi ý hôm nay</span>
+          </div>
+          <div class="masonry-grid">
+            <div class="feed-card">
+              <img
+                src="https://i.pinimg.com/1200x/a8/7e/3f/a87e3f28da1a4ccdbb212b0befb456a0.jpg"
+                class="feed-img"
+              />
+              <div class="feed-body">
+                <div class="feed-title">
+                  Bộ đôi trị mụn SVR + B5 La Roche Posay
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="feed-price">850.000đ</div>
+                  <div class="feed-sold">Đã bán 1.2k</div>
+                </div>
+              </div>
+            </div>
+            <div class="feed-card">
+              <img
+                src="https://i.pinimg.com/1200x/b8/12/d6/b812d68a736df1935244c26f33e98e12.jpg"
+                class="feed-img"
+              />
+              <div class="feed-body">
+                <div class="feed-title">Máy rửa mặt Foreo Luna mini 3</div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="feed-price">3.100.000đ</div>
+                  <div class="feed-sold">Đã bán 50</div>
+                </div>
+              </div>
+            </div>
+            <div class="feed-card">
+              <img
+                src="https://i.pinimg.com/1200x/75/a4/eb/75a4eb2856f0a54f00064570fc68d476.jpg"
+                class="feed-img"
+              />
+              <div class="feed-body">
+                <div class="feed-title">
+                  Toner Pad Carrot Carotene (Hộp 60 miếng)
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="feed-price">290.000đ</div>
+                  <div class="feed-sold">Đã bán 5k+</div>
+                </div>
+              </div>
+            </div>
+            <div class="feed-card">
+              <img
+                src="https://i.pinimg.com/1200x/01/7d/8d/017d8d227a468126db1ea3fe6c5041c1.jpg"
+                class="feed-img"
+              />
+              <div class="feed-body">
+                <div class="feed-title">Combo gội xả Nguyên Xuân</div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="feed-price">180.000đ</div>
+                  <div class="feed-sold">Đã bán 800</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-center py-3 text-muted small fw-bold">
+            Đang tải thêm...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Simple Timer Animation
+      let sec = 40;
+      setInterval(() => {
+        sec--;
+        if (sec < 0) sec = 59;
+        document.getElementById("sec-ticker").innerText =
+          sec < 10 ? "0" + sec : sec;
+      }, 1000);
+    </script>
+  </body>
+</html>

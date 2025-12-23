@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Smart Feed</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #f4f6f9;
+        --primary: #7000ff;
+        --primary-gradient: linear-gradient(135deg, #7000ff 0%, #ff0055 100%);
+        --accent-blue: #00d2ff;
+        --text-dark: #2d3436;
+        --text-grey: #636e72;
+        --glass: rgba(255, 255, 255, 0.95);
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: var(--bg-body);
+        color: var(--text-dark);
+        padding-bottom: 80px;
+      }
+
+      #app-root {
+        max-width: 100vw;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      /* --- 1. HEADER & TABS --- */
+      .feed-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .header-top {
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .page-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+      .btn-create {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        color: var(--text-dark);
+      }
+
+      /* Tabs Scroll */
+      .tabs-container {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 20px 12px 20px;
+        scrollbar-width: none;
+      }
+      .tabs-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-pill {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        background: transparent;
+        color: var(--text-grey);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: 0.2s;
+        border: 1px solid transparent;
+      }
+      .tab-pill.active {
+        background: var(--text-dark);
+        color: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      }
+      .tab-pill.expert-tab.active {
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+      }
+
+      /* --- 2. POST CARD --- */
+      .feed-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 10px;
+      }
+
+      .post-card {
+        background: white;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 6px;
+      }
+
+      /* Post Header */
+      .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+      .user-info {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #eee;
+      }
+      .user-meta {
+        display: flex;
+        flex-direction: column;
+      }
+      .user-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .verified-badge {
+        color: var(--accent-blue);
+        font-size: 0.85rem;
+      }
+      .post-time {
+        font-size: 0.75rem;
+        color: #999;
+      }
+
+      /* Content */
+      .post-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        color: #333;
+      }
+      .see-more {
+        color: var(--text-grey);
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .see-more::before {
+        content: "... ";
+      }
+
+      /* Media Grid */
+      .media-grid {
+        display: grid;
+        gap: 4px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .media-grid.single {
+        grid-template-columns: 1fr;
+      }
+      .media-grid.double {
+        grid-template-columns: 1fr 1fr;
+      }
+      .post-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        max-height: 400px;
+      }
+      .media-grid.double .post-img {
+        height: 200px;
+      }
+
+      /* Product Tag (Smart Chip) */
+      .product-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8f9fa;
+        padding: 6px 12px 6px 6px;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+        max-width: 100%;
+      }
+      .product-tag:active {
+        background: #eae6ff;
+        border-color: var(--primary);
+      }
+      .pt-thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .pt-info {
+        display: flex;
+        flex-direction: column;
+      }
+      .pt-name {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+      .pt-price {
+        font-size: 0.7rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      /* Footer Actions */
+      .post-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f8f8f8;
+        padding-top: 12px;
+      }
+      .action-group {
+        display: flex;
+        gap: 20px;
+      }
+      .action-btn {
+        font-size: 1.2rem;
+        color: var(--text-dark);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s;
+      }
+      .action-btn:active {
+        transform: scale(0.9);
+      }
+      .action-count {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .like-btn.liked {
+        color: #ff4757;
+      }
+      .like-btn.liked i {
+        font-weight: 900;
+      } /* Solid heart */
+
+      /* Floating Create Button */
+      .fab-create {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--text-dark);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <header class="feed-header">
+        <div class="header-top">
+          <div class="page-title">Cộng đồng</div>
+          <div class="btn-create">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tab-pill active">Dành cho bạn ✨</div>
+          <div class="tab-pill">Mới nhất</div>
+          <div class="tab-pill expert-tab">Chuyên gia 👨‍⚕️</div>
+          <div class="tab-pill">Routine</div>
+          <div class="tab-pill">Review</div>
+        </div>
+      </header>
+
+      <!-- Nút quay lại đầu trang -->
+      <button
+        class="btn btn-light mb-3"
+        onclick="window.location.href='home.html'"
+      >
+        <i class="fa-solid fa-arrow-left"></i> Trang chủ
+      </button>
+
+      <div class="feed-list">
+        <div class="post-card">
+          <div class="post-header">
+            <div class="user-info">
+              <img src="https://i.pravatar.cc/150?img=11" class="user-avatar" />
+              <div class="user-meta">
+                <div class="user-name">
+                  BS. Da Liễu Mai
+                  <i class="fa-solid fa-circle-check verified-badge"></i>
+                </div>
+                <div class="post-time">2 giờ trước • Chuyên gia</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-ellipsis text-muted"></i>
+          </div>
+
+          <div class="post-content">
+            <div class="post-text">
+              Retinol không đáng sợ như bạn nghĩ đâu! 😉 Nếu dùng đúng cách, nó
+              là thần dược chống lão hóa đấy.
+              <br />Lưu ý quan trọng: Luôn dùng kèm kem phục hồi B5 nhé...
+              <span class="see-more" onclick="alert('Mở rộng bài viết')"
+                >Xem thêm</span
+              >
+            </div>
+
+            <div class="media-grid single">
+              <img
+                src="https://www.kiehls.com.vn/on/demandware.static/-/Sites-kiehls-vn-ng-Library/vi_VN/dwc1714c12/images/optimize/Tos_Team/cac-buoc-skincare/cac-buoc-skincare-new-12.jpg"
+                class="post-img"
+              />
+            </div>
+
+            <div
+              class="product-tag"
+              onclick="alert('Chuyển sang trang sản phẩm')"
+            >
+              <img
+                src="https://i.pinimg.com/736x/94/53/db/9453db70bfdd0d15396360d23a92e5ee.jpg"
+                class="pt-thumb"
+              />
+              <div class="pt-info">
+                <div class="pt-name">Kem Retinol 0.5% Obagi</div>
+                <div class="pt-price">
+                  1.250.000đ
+                  <i
+                    class="fa-solid fa-chevron-right ms-1"
+                    style="font-size: 0.6rem"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-footer">
+            <div class="action-group">
+              <div class="action-btn like-btn" onclick="toggleLike(this)">
+                <i class="fa-regular fa-heart"></i>
+                <span class="action-count">1.2k</span>
+              </div>
+              <div class="action-btn">
+                <i class="fa-regular fa-comment"></i>
+                <span class="action-count">45</span>
+              </div>
+              <div class="action-btn">
+                <i class="fa-regular fa-paper-plane"></i>
+              </div>
+            </div>
+            <div class="action-btn">
+              <i class="fa-regular fa-bookmark"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <div class="user-info">
+              <img src="https://i.pravatar.cc/150?img=5" class="user-avatar" />
+              <div class="user-meta">
+                <div class="user-name">Thảo Nhi</div>
+                <div class="post-time">5 giờ trước • Da Dầu Mụn</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-ellipsis text-muted"></i>
+          </div>
+
+          <div class="post-content">
+            <div class="post-text">
+              Hành trình 21 ngày trị mụn ẩn cùng Skinthesis đây mọi người ơi! 😭
+              Thực sự kiên trì là chìa khóa. Mình dùng combo BHA + B5 theo app
+              gợi ý.
+            </div>
+
+            <div class="media-grid double">
+              <img
+                src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=300"
+                class="post-img"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=300"
+                class="post-img"
+              />
+            </div>
+
+            <div class="product-tag">
+              <img
+                src="https://placehold.co/50x50/FFF0F0/FF4757?text=B5"
+                class="pt-thumb"
+              />
+              <div class="pt-info">
+                <div class="pt-name">Serum B5 La Roche-Posay</div>
+                <div class="pt-price">850.000đ</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-footer">
+            <div class="action-group">
+              <div class="action-btn like-btn liked" onclick="toggleLike(this)">
+                <i class="fa-solid fa-heart"></i>
+                <span class="action-count">230</span>
+              </div>
+              <div class="action-btn">
+                <i class="fa-regular fa-comment"></i>
+                <span class="action-count">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card">
+          <div class="post-header">
+            <div class="user-info">
+              <img src="https://i.pravatar.cc/150?img=8" class="user-avatar" />
+              <div class="user-meta">
+                <div class="user-name">Hoàng Tùng</div>
+                <div class="post-time">1 ngày trước</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-content">
+            <div class="post-text">
+              Có ai dùng máy rửa mặt Foreo mà bị lên mụn không ạ? Em mới dùng
+              được 3 ngày mà thấy lên mấy cục mụn viêm huhu.
+            </div>
+          </div>
+
+          <div class="post-footer">
+            <div class="action-group">
+              <div class="action-btn like-btn" onclick="toggleLike(this)">
+                <i class="fa-regular fa-heart"></i>
+                <span class="action-count">5</span>
+              </div>
+              <div class="action-btn">
+                <i class="fa-regular fa-comment"></i>
+                <span class="action-count">21</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nút tạo bài viết nếu có -->
+      <button
+        class="btn btn-primary"
+        onclick="window.location.href='create_post.html'"
+      >
+        <i class="fa-solid fa-pen"></i> Tạo bài viết
+      </button>
+
+      <div class="fab-create" onclick="alert('Mở màn hình đăng bài')">
+        <i class="fa-solid fa-pen"></i>
+      </div>
+    </div>
+
+    <script>
+      function toggleLike(btn) {
+        const icon = btn.querySelector("i");
+        const isLiked = btn.classList.contains("liked");
+
+        if (isLiked) {
+          btn.classList.remove("liked");
+          icon.classList.remove("fa-solid");
+          icon.classList.add("fa-regular");
+        } else {
+          btn.classList.add("liked");
+          icon.classList.remove("fa-regular");
+          icon.classList.add("fa-solid");
+
+          // Rung nhẹ
+          if (navigator.vibrate) navigator.vibrate(50);
+        }
+      }
+
+      // Tab switching logic (Visual only)
+      document.querySelectorAll(".tab-pill").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          document
+            .querySelectorAll(".tab-pill")
+            .forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+
+          // Giả lập load lại feed
+          const feed = document.querySelector(".feed-list");
+          feed.style.opacity = 0.5;
+          setTimeout(() => (feed.style.opacity = 1), 300);
+        });
+      });
+    </script>
+  </body>
+</html>

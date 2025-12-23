@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - QR Traceability</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --scan-color: #00e5ff; /* Cyan Neon */
+        --bg-overlay: rgba(0, 0, 0, 0.6);
+        --success: #00e5ff;
+        --text-dark: #1f1d2b;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: #000;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #app-root {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- 1. CAMERA VIEW SIMULATION --- */
+      .camera-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=1000&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      /* --- 2. SCANNER OVERLAY --- */
+      .overlay-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.5); /* Làm tối xung quanh */
+
+        /* Kỹ thuật Masking để đục lỗ hình vuông ở giữa */
+        -webkit-mask-image: radial-gradient(
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 1) 0%
+        );
+        /* Fallback: Dùng border dày để che */
+      }
+
+      /* Khung vuông sáng */
+      .scanner-frame {
+        position: absolute;
+        top: 35%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 280px;
+        height: 280px;
+        box-shadow: 0 0 0 100vh rgba(0, 0, 0, 0.6); /* Che tối xung quanh */
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      /* 4 góc trang trí */
+      .corner {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--scan-color);
+        border-radius: 4px;
+        z-index: 15;
+      }
+      .tl {
+        top: 0;
+        left: 0;
+        border-right: none;
+        border-bottom: none;
+        border-top-left-radius: 16px;
+      }
+      .tr {
+        top: 0;
+        right: 0;
+        border-left: none;
+        border-bottom: none;
+        border-top-right-radius: 16px;
+      }
+      .bl {
+        bottom: 0;
+        left: 0;
+        border-right: none;
+        border-top: none;
+        border-bottom-left-radius: 16px;
+      }
+      .br {
+        bottom: 0;
+        right: 0;
+        border-left: none;
+        border-top: none;
+        border-bottom-right-radius: 16px;
+      }
+
+      /* Laser Line Animation */
+      .laser-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: var(--scan-color);
+        box-shadow: 0 0 20px var(--scan-color), 0 0 10px var(--scan-color);
+        top: 0;
+        animation: scanMove 2s infinite linear;
+        opacity: 0.8;
+      }
+      @keyframes scanMove {
+        0% {
+          top: 0;
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          top: 100%;
+          opacity: 0;
+        }
+      }
+
+      /* Controls */
+      .top-controls {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 20;
+        padding: 40px 20px 20px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .btn-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 1.1rem;
+      }
+
+      .scan-text {
+        position: absolute;
+        bottom: 20%;
+        width: 100%;
+        text-align: center;
+        color: white;
+        z-index: 20;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      /* --- 3. RESULT MODAL (Slide Up) --- */
+      .result-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-radius: 30px 30px 0 0;
+        padding: 30px 24px;
+        z-index: 100;
+        transform: translateY(110%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+      }
+      .result-sheet.active {
+        transform: translateY(0);
+      }
+
+      .sheet-handle {
+        width: 50px;
+        height: 5px;
+        background: #eee;
+        border-radius: 10px;
+        margin: -10px auto 20px auto;
+      }
+
+      .auth-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: #e0f7fa;
+        color: #006064;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #b2ebf2;
+      }
+      .auth-icon {
+        font-size: 1.5rem;
+        color: #00bcd4;
+      }
+
+      /* Timeline */
+      .trace-timeline {
+        position: relative;
+        padding-left: 20px;
+        border-left: 2px dashed #ddd;
+        margin-left: 10px;
+      }
+      .trace-node {
+        position: relative;
+        margin-bottom: 24px;
+      }
+      .trace-node:last-child {
+        margin-bottom: 0;
+      }
+
+      .node-dot {
+        position: absolute;
+        left: -26px;
+        top: 0;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ccc;
+        border: 2px solid white;
+      }
+      .trace-node.active .node-dot {
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2);
+      }
+
+      .node-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+      }
+      .node-time {
+        font-size: 0.75rem;
+        color: #888;
+      }
+
+      /* Action Btn */
+      .btn-view-detail {
+        width: 100%;
+        background: #1f1d2b;
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 16px;
+        font-weight: 700;
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <div class="camera-layer"></div>
+
+      <div class="top-controls">
+        <div class="btn-icon" onclick="history.back()">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+        <div class="text-white fw-bold" style="letter-spacing: 1px">
+          SCANNER
+        </div>
+        <div class="btn-icon" onclick="toggleFlash()">
+          <i class="fa-solid fa-bolt" id="flash-icon"></i>
+        </div>
+      </div>
+
+      <div class="scanner-frame" onclick="simulateScan()">
+        <div class="laser-line"></div>
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+      </div>
+
+      <div class="scan-text">
+        Di chuyển Camera đến mã QR trên sản phẩm<br />
+        <small class="opacity-75">(Chạm vào khung để quét thử)</small>
+      </div>
+
+      <div class="result-sheet" id="result-sheet">
+        <div class="sheet-handle"></div>
+
+        <div class="auth-badge">
+          <i class="fa-solid fa-shield-halved auth-icon"></i>
+          <div>
+            <div class="fw-bold" style="font-size: 0.95rem">
+              SẢN PHẨM CHÍNH HÃNG
+            </div>
+            <div style="font-size: 0.75rem">
+              Xác thực bởi Blockchain Skinthesis™
+            </div>
+          </div>
+          <i
+            class="fa-solid fa-check-circle ms-auto text-success"
+            style="font-size: 1.2rem"
+          ></i>
+        </div>
+
+        <div class="d-flex gap-3 mb-4">
+          <img
+            src="https://placehold.co/80x80"
+            style="border-radius: 12px; object-fit: cover"
+          />
+          <div>
+            <h5 class="fw-bold mb-1" style="font-size: 1rem">
+              Serum Vitamin C 15%
+            </h5>
+            <div class="text-muted small">
+              Lô sản xuất: <strong>#LOT8921</strong>
+            </div>
+            <div class="text-muted small">HSD: <strong>12/2027</strong></div>
+          </div>
+        </div>
+
+        <div class="trace-timeline">
+          <div class="trace-node active">
+            <div class="node-dot"></div>
+            <div class="node-title">Sản xuất tại Nhà máy Vichy, Pháp</div>
+            <div class="node-time">20/09/2024 • 08:30 AM</div>
+          </div>
+          <div class="trace-node active">
+            <div class="node-dot"></div>
+            <div class="node-title">Nhập khẩu bởi L'Oreal Việt Nam</div>
+            <div class="node-time">15/10/2024 • 14:20 PM</div>
+          </div>
+          <div class="trace-node active">
+            <div class="node-dot"></div>
+            <div class="node-title">Kiểm định chất lượng đầu vào</div>
+            <div class="node-time">20/10/2024 • Skinthesis Lab</div>
+          </div>
+        </div>
+
+        <button
+          class="btn-view-detail"
+          onclick="window.location.href='product_detail.html'"
+        >
+          Xem chi tiết sản phẩm <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Tự động mở kết quả sau 3 giây để demo
+      setTimeout(() => {
+        simulateScan();
+      }, 3000);
+
+      function simulateScan() {
+        // Rung phản hồi
+        if (navigator.vibrate) navigator.vibrate(100);
+
+        // Hiển thị kết quả
+        document.getElementById("result-sheet").classList.add("active");
+      }
+
+      function toggleFlash() {
+        const icon = document.getElementById("flash-icon");
+        icon.classList.toggle("text-warning");
+      }
+    </script>
+  </body>
+</html>

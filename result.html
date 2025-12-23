@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Result Dashboard</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- DESIGN SYSTEM --- */
+      :root {
+        --primary-gradient: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        --primary-color: #4a00e0;
+        --score-color: #8e2de2;
+        --danger-color: #ff4757;
+        --warning-color: #ffa502;
+        --success-color: #2ed573;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        background-color: #f8f9fa;
+      }
+
+      /* --- LOGIC HIỂN THỊ --- */
+      #desktop-landing {
+        display: block;
+        background: white;
+        min-height: 100vh;
+      }
+      #mobile-app-root {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        #desktop-landing {
+          display: none !important;
+        }
+        #mobile-app-root {
+          display: flex !important;
+        }
+      }
+
+      /* --- DESKTOP CSS --- */
+      .hero-section {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        background-image: radial-gradient(#ddd 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      /* --- MOBILE APP CSS --- */
+      #mobile-app-root {
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 1. HEADER & SCORE CHART */
+      .score-section {
+        padding: 20px;
+        text-align: center;
+        background: #fff;
+      }
+
+      .donut-chart {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        border-radius: 50%;
+        /* Tạo biểu đồ tròn bằng CSS Gradient */
+        background: conic-gradient(var(--score-color) 0% 78%, #f0f0f0 78% 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        transition: background 1s ease-out;
+      }
+
+      .donut-inner {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      /* 2. FACE VISUAL & HEATMAP */
+      .visual-container {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        background: #000;
+        overflow: hidden;
+      }
+
+      .face-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Lớp Heatmap chung */
+      .heatmap-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        mix-blend-mode: multiply; /* Hòa trộn màu đỏ vào da */
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .heatmap-layer.active {
+        opacity: 0.7;
+      }
+
+      /* Đốm đỏ (Heat blobs) */
+      .heat-blob {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 0, 0, 1) 0%,
+          rgba(255, 0, 0, 0) 70%
+        );
+        filter: blur(5px);
+      }
+
+      /* 3. TABS CONTROLS */
+      .tabs-container {
+        padding: 15px 15px 5px 15px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -ms-overflow-style: none;
+        scrollbar-width: none; /* Ẩn thanh cuộn */
+      }
+      .tabs-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        margin-right: 8px;
+        border-radius: 20px;
+        border: 1px solid #eee;
+        background: white;
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .tab-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3);
+      }
+
+      /* 4. METRICS GRID */
+      .metrics-grid {
+        padding: 15px;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+      .metric-card {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 15px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .metric-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-top: 5px;
+      }
+      .metric-label {
+        font-size: 0.8rem;
+        color: #888;
+      }
+
+      .status-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-left: 5px;
+        vertical-align: middle;
+      }
+      .bg-danger-subtle {
+        background: rgba(255, 71, 87, 0.1);
+        color: var(--danger-color);
+      }
+      .bg-warning-subtle {
+        background: rgba(255, 165, 2, 0.1);
+        color: var(--warning-color);
+      }
+      .bg-success-subtle {
+        background: rgba(46, 213, 115, 0.1);
+        color: var(--success-color);
+      }
+
+      /* 5. FOOTER ACTION */
+      .footer-action {
+        padding: 15px 20px 25px 20px;
+        background: white;
+        border-top: 1px solid #f0f0f0;
+      }
+      .btn-brand {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 14px;
+        font-weight: 600;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(74, 0, 224, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop-landing">
+      <div class="mb-4 text-primary">
+        <i class="fa-solid fa-chart-pie fa-4x"></i>
+      </div>
+      <h2 class="fw-bold">Kết quả Phân tích AI</h2>
+      <p class="text-muted">Thu nhỏ trình duyệt để xem Dashboard chi tiết.</p>
+    </div>
+
+    <div id="mobile-app-root">
+      <div class="score-section">
+        <h5 class="fw-bold mb-3">Sức khỏe làn da</h5>
+        <div class="donut-chart" id="score-chart">
+          <div class="donut-inner">
+            <h2 class="m-0 fw-bold" style="color: var(--score-color)">78</h2>
+            <small class="text-muted" style="font-size: 0.7rem"
+              >TỔNG ĐIỂM</small
+            >
+          </div>
+        </div>
+        <p class="text-muted small mt-2 mb-0">
+          Làn da của bạn ở mức Khá, cần cải thiện độ ẩm.
+        </p>
+      </div>
+
+      <div class="visual-container">
+        <img
+          src="https://i.pinimg.com/736x/65/8e/e0/658ee0df150f6ecf2650fa66c992bbb5.jpg"
+          class="face-img"
+        />
+
+        <div id="layer-acne" class="heatmap-layer active">
+          <div
+            class="heat-blob"
+            style="top: 25%; left: 45%; width: 50px; height: 40px"
+          ></div>
+          <div
+            class="heat-blob"
+            style="top: 80%; left: 48%; width: 30px; height: 30px"
+          ></div>
+        </div>
+
+        <div id="layer-wrinkle" class="heatmap-layer">
+          <div
+            class="heat-blob"
+            style="top: 42%; left: 25%; width: 30px; height: 20px"
+          ></div>
+          <div
+            class="heat-blob"
+            style="top: 42%; left: 75%; width: 30px; height: 20px"
+          ></div>
+          <div
+            class="heat-blob"
+            style="top: 70%; left: 35%; width: 20px; height: 40px"
+          ></div>
+        </div>
+
+        <div id="layer-pore" class="heatmap-layer">
+          <div
+            class="heat-blob"
+            style="top: 55%; left: 40%; width: 60px; height: 30px"
+          ></div>
+          <div
+            class="heat-blob"
+            style="top: 55%; left: 60%; width: 20px; height: 20px"
+          ></div>
+        </div>
+
+        <div id="layer-pigment" class="heatmap-layer">
+          <div
+            class="heat-blob"
+            style="top: 50%; left: 70%; width: 40px; height: 30px"
+          ></div>
+        </div>
+
+        <button
+          class="btn btn-sm btn-dark position-absolute bottom-0 end-0 m-3 opacity-75 rounded-pill"
+          onclick="toggleCompare()"
+        >
+          <i class="fa-solid fa-eye"></i> Gốc/AI
+        </button>
+      </div>
+
+      <div class="tabs-container">
+        <div class="tab-btn active" onclick="switchLayer('acne', this)">
+          Mụn ẩn
+        </div>
+        <div class="tab-btn" onclick="switchLayer('wrinkle', this)">
+          Nếp nhăn
+        </div>
+        <div class="tab-btn" onclick="switchLayer('pore', this)">
+          Lỗ chân lông
+        </div>
+        <div class="tab-btn" onclick="switchLayer('pigment', this)">
+          Sắc tố da
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="metric-card">
+              <div class="d-flex justify-content-between">
+                <i class="fa-solid fa-droplet text-primary"></i>
+                <span class="status-badge bg-danger-subtle">Cảnh báo</span>
+              </div>
+              <div class="metric-value text-danger">30%</div>
+              <div class="metric-label">Độ ẩm (Rất khô)</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="metric-card">
+              <div class="d-flex justify-content-between">
+                <i class="fa-solid fa-bullseye text-warning"></i>
+                <span class="status-badge bg-warning-subtle">Vừa</span>
+              </div>
+              <div class="metric-value text-warning">Trung bình</div>
+              <div class="metric-label">Mật độ mụn</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="metric-card">
+              <div class="d-flex justify-content-between">
+                <i class="fa-regular fa-clock text-success"></i>
+                <span class="status-badge bg-success-subtle">Tốt</span>
+              </div>
+              <div class="metric-value text-success">24 Tuổi</div>
+              <div class="metric-label">Tuổi sinh học da</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="metric-card">
+              <div class="d-flex justify-content-between">
+                <i class="fa-solid fa-sun text-secondary"></i>
+                <span class="status-badge bg-success-subtle">Tốt</span>
+              </div>
+              <div class="metric-value">Sáng</div>
+              <div class="metric-label">Tone da</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-action">
+        <button
+          class="btn btn-brand"
+          onclick="window.location.href='routine.html'"
+        >
+          Xem lộ trình đề xuất <i class="fa-solid fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Logic chuyển Tab Heatmap
+      function switchLayer(type, btn) {
+        // 1. Update Buttons
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // 2. Update Layers
+        document
+          .querySelectorAll(".heatmap-layer")
+          .forEach((l) => l.classList.remove("active"));
+        const targetLayer = document.getElementById("layer-" + type);
+        if (targetLayer) targetLayer.classList.add("active");
+      }
+
+      // Logic So sánh (Bật/Tắt Heatmap)
+      let isHeatmapOn = true;
+      function toggleCompare() {
+        const activeLayer = document.querySelector(".heatmap-layer.active");
+        if (activeLayer) {
+          if (isHeatmapOn) {
+            activeLayer.style.opacity = "0"; // Ẩn
+            isHeatmapOn = false;
+          } else {
+            activeLayer.style.opacity = "0.7"; // Hiện
+            isHeatmapOn = true;
+          }
+        }
+      }
+
+      // Animation chạy điểm số khi load trang
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.innerWidth <= 768) {
+          const chart = document.getElementById("score-chart");
+          // Reset về 0
+          chart.style.background = `conic-gradient(var(--score-color) 0% 0%, #f0f0f0 0% 100%)`;
+
+          // Chạy lên 78% sau 500ms
+          setTimeout(() => {
+            chart.style.background = `conic-gradient(var(--score-color) 0% 78%, #f0f0f0 78% 100%)`;
+          }, 500);
+        }
+      });
+    </script>
+  </body>
+</html>

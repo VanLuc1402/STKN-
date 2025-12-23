@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Skinthesis - Product Detail</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- SYSTEM VARS --- */
+      :root {
+        --bg-body: #f5f7fa;
+        --primary: #7000ff;
+        --primary-gradient: linear-gradient(135deg, #7000ff 0%, #ff0055 100%);
+        --accent-red: #ff4757;
+        --accent-green: #2ed573;
+        --accent-blue: #00d2ff;
+        --text-dark: #2d3436;
+        --text-grey: #888;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        background: white;
+        color: var(--text-dark);
+        padding-bottom: 90px; /* Space for Action Bar */
+      }
+
+      #app-root {
+        max-width: 100vw;
+        position: relative;
+      }
+
+      /* --- 1. HERO IMAGE SLIDER --- */
+      .product-hero {
+        position: relative;
+        width: 100%;
+        height: 45vh;
+        background: #f0f0f0;
+        overflow: hidden;
+      }
+
+      .hero-slider {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        height: 100%;
+        scrollbar-width: none;
+      }
+      .hero-slider::-webkit-scrollbar {
+        display: none;
+      }
+
+      .slide-item {
+        min-width: 100%;
+        height: 100%;
+        scroll-snap-align: center;
+        position: relative;
+      }
+      .slide-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Custom Navigation overlay */
+      .nav-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 40px 20px 0 20px;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-circle-blur {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        color: #333;
+        cursor: pointer;
+      }
+
+      .dots-indicator {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 10;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        transition: 0.3s;
+      }
+      .dot.active {
+        background: var(--primary);
+        width: 20px;
+        border-radius: 10px;
+      }
+
+      /* --- 2. MAIN INFO BODY --- */
+      .content-body {
+        position: relative;
+        margin-top: -30px;
+        background: white;
+        border-radius: 30px 30px 0 0;
+        padding: 30px 20px 20px 20px;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+        z-index: 20;
+      }
+
+      .brand-name {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #999;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .prod-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 10px;
+      }
+
+      .price-rating-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .rating-box {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .star-icon {
+        color: #ffc107;
+      }
+
+      /* --- 3. BADGES SCROLL --- */
+      .badges-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 20px;
+        scrollbar-width: none;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 20px;
+      }
+      .badges-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .badge-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .badge-verified {
+        background: #e3f2fd;
+        color: #2196f3;
+      }
+      .badge-organic {
+        background: #e8f5e9;
+        color: #4caf50;
+      }
+      .badge-cruelty {
+        background: #fff3e0;
+        color: #ff9800;
+      }
+
+      /* --- 4. AI ANALYSIS (Key Feature) --- */
+      .ai-analysis-card {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+      .ai-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .ai-title {
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Allergy Warning Box */
+      .allergy-alert {
+        background: #fff0f0;
+        border: 1px solid #ffcdd2;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 15px;
+      }
+      .alert-icon {
+        color: var(--accent-red);
+        font-size: 1.1rem;
+        margin-top: 2px;
+      }
+
+      /* Ingredient List */
+      .ingredient-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .ing-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .ing-func {
+        font-size: 0.75rem;
+        color: #666;
+        background: white;
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid #eee;
+      }
+      .ing-score {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .score-good {
+        background: var(--accent-green);
+      }
+      .score-ok {
+        background: #ffc107;
+      }
+
+      /* --- 5. REVIEWS --- */
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+      }
+
+      .review-item {
+        margin-bottom: 20px;
+      }
+      .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .reviewer-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .review-meta {
+        font-size: 0.75rem;
+        color: #999;
+      }
+      .review-text {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: #555;
+        margin-bottom: 8px;
+      }
+      .review-imgs {
+        display: flex;
+        gap: 8px;
+      }
+      .r-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+
+      /* --- 6. STICKY ACTION BAR --- */
+      .action-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 12px 20px 30px 20px;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 12px;
+        z-index: 100;
+      }
+
+      .btn-sample {
+        flex: 1;
+        border: 2px solid var(--primary);
+        background: white;
+        color: var(--primary);
+        font-weight: 700;
+        border-radius: 16px;
+        padding: 14px;
+        font-size: 0.95rem;
+      }
+
+      .btn-cart {
+        flex: 2;
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        font-weight: 700;
+        border-radius: 16px;
+        padding: 14px;
+        font-size: 1rem;
+        box-shadow: 0 8px 20px rgba(112, 0, 255, 0.3);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-root">
+      <div class="product-hero">
+        <div class="nav-overlay">
+          <button
+            class="btn-circle-blur"
+            onclick="window.location.href='shop.html'"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <button
+            class="btn-circle-blur"
+            onclick="alert('Đã thêm vào Wishlist')"
+          >
+            <i class="fa-regular fa-heart"></i>
+          </button>
+        </div>
+
+        <div class="hero-slider">
+          <div class="slide-item">
+            <img
+              src="https://placehold.co/400x500/EAE6FF/7000FF?text=Product+1"
+              class="slide-img"
+            />
+          </div>
+          <div class="slide-item">
+            <img
+              src="https://placehold.co/400x500/FFF0F0/FF4757?text=Texture"
+              class="slide-img"
+            />
+          </div>
+        </div>
+
+        <div class="dots-indicator">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <div class="content-body">
+        <div class="brand-name">LA ROCHE-POSAY</div>
+        <h1 class="prod-name">Gel Rửa Mặt Effaclar Cho Da Dầu Nhạy Cảm</h1>
+
+        <div class="price-rating-row">
+          <div class="price">385.000đ</div>
+          <div class="rating-box">
+            <i class="fa-solid fa-star star-icon"></i> 4.8 (1.2k đánh giá)
+          </div>
+        </div>
+
+        <div class="badges-scroll">
+          <div class="badge-pill badge-verified">
+            <i class="fa-solid fa-circle-check"></i> Verified by AI
+          </div>
+          <div class="badge-pill badge-organic">
+            <i class="fa-solid fa-leaf"></i> Paraben-free
+          </div>
+          <div class="badge-pill badge-cruelty">
+            <i class="fa-solid fa-paw"></i> Cruelty-free
+          </div>
+        </div>
+
+        <div class="ai-analysis-card">
+          <div class="ai-header">
+            <div class="ai-title text-primary">
+              <i class="fa-solid fa-microchip"></i> Phân tích Thành phần
+            </div>
+            <span class="badge bg-dark text-white">AI Scan</span>
+          </div>
+
+          <div class="allergy-alert">
+            <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+            <div>
+              <div class="fw-bold text-danger" style="font-size: 0.9rem">
+                Lưu ý kích ứng!
+              </div>
+              <div class="small text-muted" style="line-height: 1.3">
+                Sản phẩm có chứa <strong>Hương liệu (Parfum)</strong>. Theo hồ
+                sơ da, bạn từng nhạy cảm với thành phần này.
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <div class="ingredient-item">
+              <div class="d-flex align-items-center gap-2">
+                <div class="ing-score score-good"></div>
+                <span class="ing-name">Zinc PCA</span>
+              </div>
+              <span class="ing-func">Kiềm dầu</span>
+            </div>
+            <div class="ingredient-item">
+              <div class="d-flex align-items-center gap-2">
+                <div class="ing-score score-good"></div>
+                <span class="ing-name">Nước khoáng LRP</span>
+              </div>
+              <span class="ing-func">Làm dịu</span>
+            </div>
+            <div class="ingredient-item">
+              <div class="d-flex align-items-center gap-2">
+                <div class="ing-score score-ok"></div>
+                <span class="ing-name">Sodium Laureth Sulfate</span>
+              </div>
+              <span class="ing-func">Làm sạch sâu</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="section-title">Công dụng</h4>
+          <p class="text-muted small" style="line-height: 1.6">
+            Sữa rửa mặt tạo bọt dịu nhẹ dành riêng cho làn da dầu, mụn và nhạy
+            cảm. Giúp loại bỏ dầu thừa, tạp chất mà không làm khô da.
+            <br /><a href="#" class="text-primary fw-bold text-decoration-none"
+              >Xem thêm</a
+            >
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="section-title">Đánh giá từ người mua</h4>
+
+          <div class="review-item">
+            <div class="reviewer-info">
+              <img src="https://i.pravatar.cc/150?img=5" class="avatar" />
+              <div>
+                <div class="reviewer-name">Minh Anh</div>
+                <div class="review-meta">Phân loại: 400ml • Da dầu</div>
+              </div>
+            </div>
+            <div class="review-text">
+              Dùng rất thích, sạch mà không bị kin kít. Mùi thơm nhẹ nhàng. Giao
+              hàng nhanh.
+            </div>
+            <div class="review-imgs">
+              <img src="https://placehold.co/100" class="r-img" />
+              <img src="https://placehold.co/100" class="r-img" />
+            </div>
+          </div>
+
+          <div class="review-item">
+            <div class="reviewer-info">
+              <img src="https://i.pravatar.cc/150?img=9" class="avatar" />
+              <div>
+                <div class="reviewer-name">Hoàng Tùng</div>
+                <div class="review-meta">Phân loại: 200ml • Da hỗn hợp</div>
+              </div>
+            </div>
+            <div class="review-text">
+              Sản phẩm chính hãng, check code thoải mái. Sẽ ủng hộ shop tiếp.
+            </div>
+          </div>
+
+          <button
+            class="btn btn-outline-secondary w-100 rounded-pill py-2 text-dark fw-bold"
+            style="font-size: 0.9rem"
+          >
+            Xem tất cả 1.2k đánh giá
+          </button>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button
+          class="btn-sample"
+          onclick="alert('Đã đăng ký nhận mẫu thử (10ml)')"
+        >
+          Mẫu thử
+        </button>
+        <button class="btn-cart" onclick="alert('Đã thêm vào giỏ hàng')">
+          Thêm vào giỏ <i class="fa-solid fa-cart-plus"></i>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
